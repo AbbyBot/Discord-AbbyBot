@@ -5,13 +5,14 @@ from chat_commands.PiedraPapelOTijera import PiedraPapelOTijera
 from chat_commands.ping import Ping
 from chat_commands.Codear import Codear
 import sqlite3
+import pyjokes
+import random
 
 conn = sqlite3.connect('abby_database.db')
 cursor = conn.cursor()
 
 
 bot = commands.Bot(command_prefix='abby_', intents=discord.Intents.all())
-
 
 @bot.event # Cargará todos los archivos de comandos extras
 async def on_ready():
@@ -21,7 +22,7 @@ async def on_ready():
     await bot.add_cog(PiedraPapelOTijera(bot))
     await bot.add_cog(Codear(bot))
 
-@bot.event #Si alguien usa el "abby_" pero no escribe nada más
+@bot.event # Si alguien usa el "abby_" pero no escribe nada más
 async def on_message(message):
     # Verifica si el mensaje comienza con el prefijo del bot y si el autor no es el propio bot
     if message.content.startswith(bot.command_prefix) and message.author != bot.user:
@@ -29,14 +30,14 @@ async def on_message(message):
         if not bot.get_command(message.content[len(bot.command_prefix):]):
             # Responde con un mensaje personalizado
             await message.channel.send("Por favor, escriba un comando válido.")
+            await message.channel.send("Puedes usar 'abby_ayuda' ")
 
     # Permite que otros comandos y eventos sigan ejecutándose
     await bot.process_commands(message)
 
-
 bot.mention_count = {}  # Inicializar el diccionario de menciones
 
-@bot.event
+@bot.event # Sistema de menciones
 async def on_message(message):
     if message.author == bot.user:
         return
@@ -93,19 +94,37 @@ async def on_message(message):
     # Permite que otros comandos y eventos sigan ejecutándose
     await bot.process_commands(message)
 
+@bot.command()
+async def chiste(ctx):
+    joke = pyjokes.get_joke(language='es', category='all')
+    await ctx.send(joke)
+
+
+
 
 @bot.event
 async def on_message_delete(message):
-    # Tu lógica para manejar mensajes eliminados, si es necesario
+
+    message_probability = random.randint(1,5)
+    print(f"Valor message_probability: {message_probability}")
+
+    if message_probability == 1:
+
+        cursor.execute("SELECT contenido FROM delete_responses ORDER BY RANDOM() LIMIT 1")
+        forgiveness_result = cursor.fetchone()
+        mensaje = forgiveness_result[0]
+
+        await message.channel.send(mensaje)
     pass
 
 @bot.event
 async def on_message_edit(before, after):
-    # Tu lógica para manejar mensajes editados, si es necesario
+    #Coming soon
     pass
 
 
+
     
-bot.run('Secreto')
+bot.run('MTAyODA2NTc4NDAxNjE0MjM5OA.GYdENy.K2Gmu0jWYIAuhl04JwLo569FBK29ephvVWX6kg')
 
 
