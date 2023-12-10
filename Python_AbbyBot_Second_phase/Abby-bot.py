@@ -125,6 +125,6 @@ async def on_message_edit(before, after):
 
 
     
-bot.run('MTAyODA2NTc4NDAxNjE0MjM5OA.GYdENy.K2Gmu0jWYIAuhl04JwLo569FBK29ephvVWX6kg')
+bot.run(' >:( ')
 
 
