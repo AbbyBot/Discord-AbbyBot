@@ -1,26 +1,37 @@
+# Importación de librerías
+
 import discord
 from discord.ext import commands
+import sqlite3
+import random
+
+# Imporatcion de comandos
+
 from chat_commands.saludos import Saludos
 from chat_commands.PiedraPapelOTijera import PiedraPapelOTijera
 from chat_commands.ping import Ping
 from chat_commands.Codear import Codear
-import sqlite3
-import pyjokes
-import random
+from chat_commands.Ayuda import Ayuda
+from chat_commands.Obtener_acceso import ObtenerAcceso
+
+
+# Base de datos
 
 conn = sqlite3.connect('abby_database.db')
 cursor = conn.cursor()
 
+# Prefijo del bot
 
 bot = commands.Bot(command_prefix='abby_', intents=discord.Intents.all())
 
-@bot.event # Cargará todos los archivos de comandos extras
+@bot.event # Cargar todos los archivos de comandos extras
 async def on_ready():
     print(f'Bot conectado como {bot.user.name}')
     await bot.add_cog(Saludos(bot))
     await bot.add_cog(Ping(bot))
     await bot.add_cog(PiedraPapelOTijera(bot))
     await bot.add_cog(Codear(bot))
+    await bot.add_cog(ObtenerAcceso(bot))
 
 @bot.event # Si alguien usa el "abby_" pero no escribe nada más
 async def on_message(message):
@@ -94,14 +105,6 @@ async def on_message(message):
     # Permite que otros comandos y eventos sigan ejecutándose
     await bot.process_commands(message)
 
-@bot.command()
-async def chiste(ctx):
-    joke = pyjokes.get_joke(language='es', category='all')
-    await ctx.send(joke)
-
-
-
-
 @bot.event
 async def on_message_delete(message):
 
@@ -125,6 +128,7 @@ async def on_message_edit(before, after):
 
 
     
-bot.run(' >:( ')
+bot.run('Pruebita')
+
 
 
