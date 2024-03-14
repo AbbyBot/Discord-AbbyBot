@@ -17,17 +17,26 @@ class PiedraPapelOTijera(commands.Cog):
 
         eleccion_usuario = eleccion_usuario.lower()
 
-        await ctx.send(f'{self.bot.user.name} está pensando...')
+        await ctx.send('Hmm... ')
 
         await asyncio.sleep(2)  # Espera de 2 segundos (ajusta según sea necesario)
 
         eleccion_bot = random.choice(opciones_validas)
 
+        await ctx.send(f"Elijo {eleccion_bot}!")
+
+        await asyncio.sleep(1) # Esperar 1 segundo mas
+
         resultado = self.obtener_resultado(eleccion_usuario, eleccion_bot)
 
-        await asyncio.sleep(1)  # Espera de 1 segundo antes de mostrar el resultado (ajusta según sea necesario)
 
-        await ctx.send(f'Tú elegiste {eleccion_usuario}. {self.bot.user.name} eligió {eleccion_bot}. {resultado}')
+        await ctx.send(f'Tú elegiste {eleccion_usuario}.')
+        
+        await asyncio.sleep(1)
+
+        await ctx.send(resultado)
+
+
 
     def obtener_resultado(self, eleccion_usuario, eleccion_bot):
         if eleccion_usuario == eleccion_bot:
