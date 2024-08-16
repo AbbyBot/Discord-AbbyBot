@@ -23,6 +23,8 @@ from event_codes.Banned_URLs_Warn import Banned_URLs
 
 
 
+
+
 # Prefijo del bot
 
 bot = commands.Bot(command_prefix='abby_', intents=discord.Intents.all())
@@ -41,8 +43,15 @@ async def on_ready():
     await bot.add_cog(Banned_URLs(bot))
 
 
+    await bot.tree.sync()  # Sincroniza los comandos slash globalmente
+
+
+    print("Comandos slash sincronizados.")
+
+
+
     
-bot.run(' >:( ') # Token, Siempre cambiar antes de hacer un commit mensito
+bot.run('token_here') # Token, Siempre cambiar antes de hacer un commit mensito
 
 
 
