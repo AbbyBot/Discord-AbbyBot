@@ -4,7 +4,6 @@ load_dotenv()
 
 # Imports
 import os
-
 import discord
 from discord.ext import commands
 
@@ -51,7 +50,9 @@ async def on_ready():
     print("Synchronized slash commands.")
 
 
-bot.run(token) # Token run
-
+try:
+    bot.run(token)  # Token run
+except Exception as e:
+    print(f"An error has occurred: {e}") 
 
 
