@@ -44,13 +44,6 @@ class Abby_mentions(commands.Cog):
             resultado = cursor.fetchone()
             mensaje = resultado[0] if resultado else 'En estos momentos no sé cómo responderte :/ '
             await message.channel.send(mensaje)
-        # else:
-        #     if message.content.startswith(self.bot.command_prefix) and message.author != self.bot.user:
-        #         if not self.bot.get_command(message.content[len(self.bot.command_prefix):]):
-        #             await message.channel.send("Por favor, escriba un comando válido.")
-        #             await message.channel.send("Puede usar el comando abby_ayuda para ver la lista de comandos disponibles.")
-
-        # await self.bot.process_commands(message)
 
 def setup(bot):
     bot.add_cog(Abby_mentions(bot))
