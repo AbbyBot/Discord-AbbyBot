@@ -3,7 +3,7 @@ from discord.ext import commands
 import random
 import sqlite3
 
-# Base de datos
+# Database
 conn = sqlite3.connect('abby_database.db')
 cursor = conn.cursor()
 
@@ -15,7 +15,7 @@ class Deleted_Messages(commands.Cog):
     async def on_message_delete(self, message):
 
         message_probability = random.randint(1, 5)
-        print(f"Valor message_probability: {message_probability}")
+        print(f"message_probability value: {message_probability}")
 
         if message_probability == 1:
 
