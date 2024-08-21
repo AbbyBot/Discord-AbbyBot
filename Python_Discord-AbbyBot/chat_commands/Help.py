@@ -50,13 +50,28 @@ class Help(commands.Cog):
         commands_help = cursor.fetchall()
 
 
- # Create embed
+        # Create embed
+
+         # Get server language
+        language_code = result[0]
+
+        # Validate the language, title and change the description as appropriate
+        if language_code == 'en':
+            description_title = 'Help'
+            description_text = "Here are the available commands:"
+        elif language_code == 'es':
+            description_title = 'Ayuda'
+            description_text = "Aquí están los comandos disponibles:"
+        else:
+            description_title = 'Help'
+            description_text = "Here are the available commands:"  # English default
+
+
         embed = discord.Embed(
-            title="Help",
-            description="Here are the available commands:",
+            title=description_title,
+            description=description_text,
             color=discord.Color.from_rgb(145, 61, 33)  # Abbybot's color
         )
-
         # Add commands and descriptions
         for command_code, command_description in commands_help:
             embed.add_field(name=command_code, value=command_description, inline=False)

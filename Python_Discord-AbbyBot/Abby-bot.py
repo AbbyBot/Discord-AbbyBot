@@ -25,6 +25,7 @@ from chat_commands.RockPaperScissors import RockPaperScissors
 from chat_commands.Ping import Ping
 from chat_commands.Code import Code
 from chat_commands.Help import Help
+from chat_commands.Set_language import SetLanguage
 
 # Events import
 from event_codes.Deleted_messages import Deleted_Messages
@@ -68,7 +69,8 @@ async def on_ready():
     await bot.add_cog(Deleted_Messages(bot))
     await bot.add_cog(Abby_mentions(bot))
     await bot.add_cog(Help(bot))
-
+    await bot.add_cog(SetLanguage(bot))
+    
     # Sync slash commands
     await bot.tree.sync() 
     print("Synchronized slash commands.")
