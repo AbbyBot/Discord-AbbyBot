@@ -38,15 +38,15 @@ class SetLanguage(commands.Cog):
         cursor.execute("UPDATE server_settings SET guild_language = %s WHERE guild_id = %s", (language, guild_id))
         db.commit()
 
-        # Obtener el idioma actual del servidor
+        # Get server's bot language
         cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
-        current_language = cursor.fetchone()[0]  # Suponemos que siempre existe un resultado
+        current_language = cursor.fetchone()[0]  # We assume that there is always an outcome
 
         # Confirm to user
         if language == 'en':
-            await interaction.response.send_message("The language has been set to English.", ephemeral=True)
+            await interaction.response.send_message("My language has been set to English.", ephemeral=False)
         elif language == 'es':
-            await interaction.response.send_message("El idioma ha sido cambiado a Español.", ephemeral=True)
+            await interaction.response.send_message("Mi idioma ha sido cambiado a Español.", ephemeral=False)
 
         # Close db connection
         cursor.close()
