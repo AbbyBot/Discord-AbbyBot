@@ -73,7 +73,10 @@ async def on_ready():
     print(f'Bot started as {bot.user.name}')
 
     # Start the scheduler in a separate thread
-    threading.Thread(target=schedule_restart).start()
+
+    
+   # Uncomment this line when deployed in production 
+   #  threading.Thread(target=schedule_restart).start()
     
     # Register servers where the bot is already present
     for guild in bot.guilds:
