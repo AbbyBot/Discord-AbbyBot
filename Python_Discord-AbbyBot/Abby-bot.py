@@ -5,6 +5,11 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import mysql.connector
 
+import sys
+import schedule
+import time
+import threading
+
 # Load dotenv variables
 load_dotenv()
 
@@ -35,6 +40,20 @@ from event_codes.Abby_mentions import Abby_mentions
 # Bot Prefix default
 bot = commands.Bot(command_prefix='abbybot_', intents=discord.Intents.all())
 
+# Function to restart the bot
+def restart_bot():
+    os.execv(sys.executable, ['python'] + sys.argv)  # Reinicia el script de Python actual
+    print("Bot is restarting...")
+
+# Scheduler to restart the bot every hour
+def schedule_restart():
+    schedule.every(2).hours.do(restart_bot)
+
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+
 # Function to register new servers
 def register_server(guild):
     cursor.execute("SELECT guild_id FROM server_settings WHERE guild_id = %s", (guild.id,))
@@ -52,6 +71,9 @@ def register_server(guild):
 @bot.event
 async def on_ready():
     print(f'Bot started as {bot.user.name}')
+
+    # Start the scheduler in a separate thread
+    threading.Thread(target=schedule_restart).start()
     
     # Register servers where the bot is already present
     for guild in bot.guilds:
