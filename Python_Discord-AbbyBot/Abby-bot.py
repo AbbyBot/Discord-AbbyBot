@@ -71,9 +71,13 @@ async def on_ready():
     await bot.add_cog(Help(bot))
     await bot.add_cog(SetLanguage(bot))
     
-    # Sync slash commands
-    await bot.tree.sync() 
-    print("Synchronized slash commands.")
+    # Sync slash commands globally or to specific guilds
+    try:
+        synced_commands = await bot.tree.sync()
+        print(f"Successfully synced {len(synced_commands)} commands.")
+    except Exception as e:
+        print(f"An error occurred while syncing commands: {e}")
+
 
 @bot.event
 async def on_guild_join(guild):
