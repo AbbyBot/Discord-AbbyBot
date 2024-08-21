@@ -56,17 +56,23 @@ def schedule_restart():
 
 # Function to register new servers
 def register_server(guild):
+    # Query the default language ID (in this case 'en' for English)
+    cursor.execute("SELECT id FROM languages WHERE language_code = %s", ('en',))
+    default_language_id = cursor.fetchone()[0]  #get the language ID
+
+    # check if the server is already registered
     cursor.execute("SELECT guild_id FROM server_settings WHERE guild_id = %s", (guild.id,))
     result = cursor.fetchone()
 
     if result is None:
-        # If the server is not registered, we add it with default language 'en'
+        # If the server is not registered, we add it with the default language
         cursor.execute("INSERT INTO server_settings (guild_id, guild_name, owner_id, member_count, prefix, guild_language) VALUES (%s, %s, %s, %s, %s, %s)",
-                       (guild.id, guild.name, guild.owner_id, guild.member_count, 'abbybot_', 'en'))
+                       (guild.id, guild.name, guild.owner_id, guild.member_count, 'abbybot_', default_language_id))
         db.commit()
-        print(f"Server {guild.name} registered with default language in English.")
+        print(f"Server {guild.name} registered with default language in English (ID: {default_language_id}).")
     else:
         print(f"Server {guild.name} is already registered.")
+
 
 @bot.event
 async def on_ready():
