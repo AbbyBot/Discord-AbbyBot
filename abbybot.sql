@@ -157,6 +157,11 @@ VALUES
 (2, 'es', 'Español');
 
 
+INSERT INTO categories 
+VALUES
+(1,'About Her'),
+(2,'Lore'),
+(3,'Advice');
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

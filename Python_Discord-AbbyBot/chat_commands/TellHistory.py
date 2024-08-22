@@ -43,25 +43,23 @@ class TellHistory(commands.Cog):
             db.close()
             return
 
-        # Get server language
-        language_code = result[0]
+        # Get the language_id of the server
+        language_id = result[0]
 
         # Query to get a random dialogue from the selected category and the server's language
         cursor.execute("""
             SELECT d.message FROM dialogues d
             JOIN categories c ON d.category_id = c.id
-            JOIN languages l ON d.language_id = l.id
-            WHERE c.category = %s AND l.language_code = %s
+            WHERE c.category = %s AND d.language_id = %s
             ORDER BY RAND() LIMIT 1;
-        """, (category.value, language_code))
+        """, (category.value, language_id))
         dialogue = cursor.fetchone()
 
-        
         if dialogue is None:
-            # If no dialogue is found, send an error message based on the language
-            if language_code == 'en':
+            # If no dialogue is found, send an error message based on the language_id
+            if language_id == 1:  # English
                 error_message = f"Sorry, I don't have anything to say in the {category.value} category."
-            elif language_code == 'es':
+            elif language_id == 2:  # Spanish
                 error_message = f"Lo siento, no tengo nada que decir en la categoría {category.value}."
             else:
                 error_message = f"Sorry, I don't have anything to say in the {category.value} category."  # Default to English
@@ -70,7 +68,6 @@ class TellHistory(commands.Cog):
             cursor.close()
             db.close()
             return
-
 
         # Create and send the embed with the dialogue
         embed = discord.Embed(
@@ -83,9 +80,4 @@ class TellHistory(commands.Cog):
         await interaction.response.send_message(embed=embed)
 
         # Close DB connection
-        cursor.close()
-        db.close()
-
-# Register the Cog
-async def setup(bot):
-    await bot.add_cog(TellHistory(bot))
+      
