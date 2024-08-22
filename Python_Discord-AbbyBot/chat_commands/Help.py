@@ -37,10 +37,10 @@ class Help(commands.Cog):
             return
 
         # Get server language
-        language_id = result[0]  # Aquí obtenemos el ID del lenguaje correctamente
+        language_id = result[0]  # Get language ID
 
         # Commands and description Query
-        cursor.execute("SELECT command_code, command_description FROM help WHERE language_code = (SELECT language_code FROM languages WHERE id = %s)", (language_id,))
+        cursor.execute("SELECT command_code, command_description FROM help WHERE language_id = %s", (language_id,))
         commands_help = cursor.fetchall()
 
         # Validate the language, title, and change the description as appropriate
