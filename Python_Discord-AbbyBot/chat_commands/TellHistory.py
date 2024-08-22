@@ -79,5 +79,4 @@ class TellHistory(commands.Cog):
         # Send message
         await interaction.response.send_message(embed=embed)
 
-        # Close DB connection
       
