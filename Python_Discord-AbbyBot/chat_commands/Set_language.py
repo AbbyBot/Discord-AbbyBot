@@ -18,10 +18,6 @@ class SetLanguage(commands.Cog):
         discord.app_commands.Choice(name="Español", value=2)  # 2 es
     ])
     async def set_language(self, interaction: discord.Interaction, language: int):
-        # Check if user has admin permission
-        if not interaction.user.guild_permissions.administrator:
-            await interaction.response.send_message("You do not have permission to change the language.", ephemeral=True)
-            return
 
         # Connect to db using MySQL
         db = mysql.connector.connect(
@@ -41,6 +37,15 @@ class SetLanguage(commands.Cog):
         # Get server's bot language
         cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
         current_language_id = cursor.fetchone()[0]  # We assume that there is always an outcome
+
+            # Check if user has admin permission
+        if not interaction.user.guild_permissions.administrator:
+            if current_language_id == 1:
+                await interaction.response.send_message("You do not have permission to change the AbbyBot's language.", ephemeral=True)
+                return
+            if current_language_id == 2:
+                await interaction.response.send_message("No tienes permiso para cambiar el idioma de AbbyBot.", ephemeral=True)
+                return
 
         # Confirm to user
         if current_language_id == 1:

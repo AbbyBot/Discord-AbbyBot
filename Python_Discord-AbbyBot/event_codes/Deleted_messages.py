@@ -4,8 +4,8 @@ import random
 import sqlite3
 
 # Database
-conn = sqlite3.connect('abby_database.db')
-cursor = conn.cursor()
+# conn = sqlite3.connect('abby_database.db')
+# cursor = conn.cursor()
 
 class Deleted_Messages(commands.Cog):
     def __init__(self, bot):
