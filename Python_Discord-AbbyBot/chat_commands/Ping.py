@@ -6,9 +6,23 @@ import random
 import mysql.connector
 from dotenv import load_dotenv
 import os
+import random
 
 # Load dotenv variables
 load_dotenv()
+
+# load all .env Emojis
+emojis_str = os.getenv("EMOJIS", "")  # Get the string, default will be an empty string if not defined
+
+# Check if global variable have content
+if not emojis_str:
+    emojis = [" "]  # Use blank space if variable doesn't have content
+else:
+    emojis = emojis_str.split(',')  # Separate string in a list of emojis
+
+# Choose a random emoji (or space if there are no emojis)
+random_emoji = random.choice(emojis)
+
 
 class Ping(commands.Cog):
     def __init__(self, bot):
@@ -16,6 +30,7 @@ class Ping(commands.Cog):
 
     @app_commands.command(name="ping", description="Check your latency with the server.")
     async def ping(self, interaction: discord.Interaction):
+
 
         user_mention = interaction.user.mention  # Username
         username = interaction.user.name         # Discord username
@@ -38,14 +53,14 @@ class Ping(commands.Cog):
         language_id = result[0]  # Get language ID
 
         # Commands and description Query
-        cursor.execute("SELECT command_code, command_description FROM help WHERE language_code = (SELECT language_code FROM languages WHERE id = %s)", (language_id,))
+        cursor.execute("SELECT command_code, command_description FROM help WHERE language_id = %s", (language_id,))
         commands_help = cursor.fetchall()
 
         # Validate the language
 
         if language_id == 1:
 
-            await interaction.response.send_message("Pinging...") 
+            await interaction.response.send_message(f"Pinging... {random_emoji} ") 
 
             # Calculate bot latency
             bot_latency = round(self.bot.latency * 1000)
@@ -69,7 +84,7 @@ class Ping(commands.Cog):
        
         elif language_id == 2:
 
-            await interaction.response.send_message("Haciendo ping...") 
+            await interaction.response.send_message(f"Haciendo ping... {random_emoji}") 
 
             # Calculate bot latency
             bot_latency = round(self.bot.latency * 1000)
