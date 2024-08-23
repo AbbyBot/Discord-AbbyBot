@@ -19,11 +19,11 @@ class Deleted_Messages(commands.Cog):
 
         if message_probability == 1:
 
-            cursor.execute("SELECT contenido FROM delete_responses ORDER BY RANDOM() LIMIT 1")
-            forgiveness_result = cursor.fetchone()
-            mensaje = forgiveness_result[0]
+            #cursor.execute("SELECT contenido FROM delete_responses ORDER BY RANDOM() LIMIT 1")
+            #forgiveness_result = cursor.fetchone()
+            #mensaje = forgiveness_result[0]
 
-            await message.channel.send(mensaje)
+            await message.channel.send("Debug: mensaje eliminado")
 
 def setup(bot):
     bot.add_cog(Deleted_Messages(bot))
