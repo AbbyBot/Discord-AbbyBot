@@ -43,7 +43,7 @@ bot = commands.Bot(command_prefix='abbybot_', intents=discord.Intents.all())
 
 # Function to restart the bot
 def restart_bot():
-    os.execv(sys.executable, ['python'] + sys.argv)  # Reinicia el script de Python actual
+    os.execv(sys.executable, ['python'] + sys.argv)  # Restart Python script
     print("Bot is restarting...")
 
 # Scheduler to restart the bot every hour
@@ -54,41 +54,108 @@ def schedule_restart():
         schedule.run_pending()
         time.sleep(1)
 
+def ensure_tables_exist():
+    tables = ['server_settings', 'dashboard', 'languages', 'mention_counter']  # Add tables to check
 
-# Function to register new servers
+    for table in tables:
+        cursor.execute(f"SHOW TABLES LIKE '{table}';")
+        result = cursor.fetchone()
+        if result is None:
+            # (Optional) Here you can run the SQL to create the missing tables
+            print(f"Table {table} does not exist. You should create it.")
+        else:
+            print(f"Table {table} already exists.")
+
+# Function to register new servers or update existing servers
 def register_server(guild):
     # Query the default language ID (in this case 'en' for English)
     cursor.execute("SELECT id FROM languages WHERE language_code = %s", ('en',))
-    default_language_id = cursor.fetchone()[0]  #get the language ID
+    default_language_id = cursor.fetchone()[0]
 
-    # check if the server is already registered
-    cursor.execute("SELECT guild_id FROM server_settings WHERE guild_id = %s", (guild.id,))
+    # Check if the server is already registered
+    cursor.execute("SELECT guild_id, guild_name, owner_id, member_count FROM server_settings WHERE guild_id = %s", (guild.id,))
     result = cursor.fetchone()
 
     if result is None:
-        # If the server is not registered, we add it with the default language
+        # If the server is not registered, add it with the default language
         cursor.execute("INSERT INTO server_settings (guild_id, guild_name, owner_id, member_count, prefix, guild_language) VALUES (%s, %s, %s, %s, %s, %s)",
-                       (guild.id, guild.name, guild.owner_id, guild.member_count, 'abbybot_', default_language_id))
+                       (guild.id, guild.name, guild.owner.id, guild.member_count, 'abbybot_', default_language_id))
         db.commit()
         print(f"Server {guild.name} registered with default language in English (ID: {default_language_id}).")
     else:
-        print(f"Server {guild.name} is already registered.")
+        # Compare the existing values to see if they need updating
+        if result[1] != guild.name or result[2] != guild.owner.id or result[3] != guild.member_count:
+            cursor.execute("UPDATE server_settings SET guild_name = %s, owner_id = %s, member_count = %s WHERE guild_id = %s",
+                           (guild.name, guild.owner.id, guild.member_count, guild.id))
+            db.commit()
+            print(f"Server {guild.name} updated with new values.")
+
+    # Register or update all members in the dashboard table
+    register_members(guild)
+
+
+# Function to register or update members in the dashboard table
+def register_members(guild):
+    for member in guild.members:
+        cursor.execute("SELECT user_id FROM dashboard WHERE guild_id = %s AND user_id = %s", (guild.id, member.id))
+        result = cursor.fetchone()
+
+        if result is None:
+            cursor.execute("INSERT INTO dashboard (guild_id, user_id, user_username, user_nickname, date_joined, is_active) VALUES (%s, %s, %s, %s, NOW(), 1)",
+                           (guild.id, member.id, member.name, member.display_name))
+            db.commit()
+            print(f"Member {member.name} added to dashboard for guild {guild.name}.")
+        else:
+            cursor.execute("UPDATE dashboard SET user_username = %s, user_nickname = %s WHERE guild_id = %s AND user_id = %s",
+                           (member.name, member.display_name, guild.id, member.id))
+            db.commit()
+            print(f"Member {member.name} updated in dashboard for guild {guild.name}.")
+
+def update_user_status(guild):
+    # Get list of users on server from database
+    cursor.execute("SELECT user_id FROM dashboard WHERE guild_id = %s", (guild.id,))
+    stored_users = cursor.fetchall()  # List of users in the database
+
+    # Get current list of members from server
+    guild_members = {member.id for member in guild.members}  # Set with the IDs of the current members
+
+    # Check if stored users are still on the server
+    for (user_id,) in stored_users:
+        if user_id not in guild_members:
+            # User kicked, update status to inactive
+            cursor.execute("UPDATE dashboard SET is_active = 0 WHERE guild_id = %s AND user_id = %s", (guild.id, user_id))
+            db.commit()
+            print(f"User {user_id} marked as inactive in guild {guild.name}.")
+        else:
+            # User is still on the server, ensure it is active
+            cursor.execute("UPDATE dashboard SET is_active = 1 WHERE guild_id = %s AND user_id = %s", (guild.id, user_id))
+            db.commit()
+
+
 
 
 @bot.event
 async def on_ready():
     print(f'Bot started as {bot.user.name}')
 
-    # Start the scheduler in a separate thread
+    # Ensure all necessary tables exist
+    ensure_tables_exist()
 
-    
+    # Start the scheduler in a separate thread
    # Uncomment this line when deployed in production 
    #  threading.Thread(target=schedule_restart).start()
     
     # Register servers where the bot is already present
+
     for guild in bot.guilds:
         register_server(guild)
-    
+
+    # update users
+
+    for guild in bot.guilds:
+        update_user_status(guild)
+
+
     # Change bot presence
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.watching, 
