@@ -1,46 +1,185 @@
-# AbbyBot
+# <p align="center">Discord AbbyBot</p>
 
-¡Hola! Soy AbbyBot, un proyecto de bot de Discord creado por un entusiasta novato en el mundo de la programación de bots. Mi objetivo principal es ofrecer una experiencia única mediante comandos y charlas interactivas en tu servidor de Discord. Aunque no soy nada profesional, ¡estoy aquí para pasar el rato contigo!
+<p style="text-align: center;"><strong>Entertainment, Administration, Multilingual, Storytelling, A charismatic survivor girl.</strong></p>
+<div align="center">
 
-## Descripción
+powered by
 
-AbbyBot es un bot de Discord diseñado por alguien que está dando sus primeros pasos en el fascinante mundo de la programación de bots. Con un prefijo fácil de recordar, `abby_`, podrás acceder a diversas funcionalidades y disfrutar de conversaciones amenas. No esperes perfección, ¡pero sí puedes esperar diversión!
+![image]( https://img.shields.io/badge/Discord.py-7289DA?style=for-the-badge&logo=discord&logoColor=white)
+![image]( https://img.shields.io/badge/Python-3.10.12-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![image]( https://img.shields.io/badge/MySQL-brown?style=for-the-badge&logo=mysql&logoColor=white)
+![image]( https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
+![image]( https://img.shields.io/badge/Krita-203759?style=for-the-badge&logo=krita&logoColor=red)
+![image]( https://img.shields.io/badge/dotenv-darkgreen?style=for-the-badge&logo=dotenv&logoColor=EEF37B)
+</div>
 
-## Características
-
-- **Comandos Interactivos:** Accede a una variedad de comandos interactivos para realizar acciones específicas. (en desarrollo)
-- **Charlas Divertidas:** Disfruta de conversaciones divertidas y entretenidas con AbbyBot. (en desarrollo)
-- **Prefijo Personalizable:** Utiliza el prefijo `abby_` para invocar los comandos, pero si lo prefieres, puedes personalizarlo según tus preferencias.
-
-## Instalación (De pruebas)
-
-- **Abrir "1. instalar-entorno.bat"** : creará un entorno virtual de Python en la ruta y después instalará las dependencias del bot.
-- **Abrir "2. activar-entorno.bat"** : activará el entorno
-- **Desde "2. activar-entorno.bat" arrastrar manualmente el archivo "3. iniciar-bot.bat" y ejecutarlo** : Con esto se iniciará el bot desde la consola con su entorno.
-
-## Comandos Principales
-
-- `abby_ppt [piedra/papel/tijera]`: Juega un pequeño juego de piedra, papel o tijera con AbbyBot.
-- `abby_saludo [hola/buenosdias/buenasnoches]`: Saluda a AbbyBot y disfruta de una conversación amistosa. AbbyBot responderá amigablemente a tu saludo.
-- `abby_codear [*pegar tu código aqui*]`: ¿Necesitas compartir código? Utiliza este comando y AbbyBot formateará tu código como un mensaje de código.
-- `abby_ping `: Mide tu ping aproximado con AbbyBot
-
-- **¡Proximamente mas comandos!**
-
-## Respuestas automaticas del bot
-
-- **Tagear varias veces a AbbyBot** si mencionas continuamente a AbbyBot, esta responderá de distintas maneras, incluso llegándose a enfadar. Pero seguro luego te perdona :p
-
-## Contribuciones
-
-¡Las contribuciones son bienvenidas! Si tienes sugerencias, problemas o mejoras, ten en cuenta que soy un novato, pero aún así, no dudes en abrir un problema o enviar una solicitud de extracción.
+AbbyBot is a multi-purpose discord application, mainly dedicated to the entertainment and administrative sector.
 
 
-- "Tengo planeadas muchas mas cosas a realizar con este bot, pero todo dependerá del tiempo, motivación y mi conocimiento..."
+<p align="center">AbbyBot plays Abigail "Abby" Monroe  as a character, a character designed by 'AstronautMarkus', every action she takes will try to imitate the personality of this fictional character.</p>
 
 
 
+## Overview
 
----
+AbbyBot is an application for Discord (BOT) designed by <a href="https://reyesandfriends.cl/">reyesandfriends.cl</a>, a project that seeks to create a self-sufficient application for the management and entertainment of servers, through the use of `slash_commands`, it also has a multilingual system to switch languages ​​from `English` to `Spanish` and vice versa.
 
-¡Espero que disfrutes usando AbbyBot! Recuerda, no soy profesional, ¡pero estoy aquí para pasar un buen rato contigo!
+
+## Bot Features
+
+- **Slash commands:** AbbyBot owns all its commands using `slash_commands` to make it easier for the user to use.
+- **Events system:** AbbyBot has an event system where it will respond to the user in different ways if they do a specific thing, such as mentioning it or deleting messages. This system can be disabled by the administrator.
+- **Administration system:** `(W.I.P)` is currently still considered a work in development, but will be implemented very soon in its initial phase.
+- **Random dialogues:** AbbyBot speaks different words in different languages, has different dialogues in order to attract the user's attention. 
+- **'Abigail':** One of AbbyBot's objectives is to present "her" character, each dialogue she has has some story to tell.
+
+## Installation (Development)
+
+AbbyBot is built with the use of global variables (dotenv), so you need to create an `.env` file before starting.
+
+- **Create a .env file:** Using a code or text editor you can create an .env file, it must contain the following content:
+
+| **Variable**   | **Description**                                                                 |
+|----------------|---------------------------------------------------------------------------------|
+| `BOT_TOKEN`    | The token provided by Discord for your bot (keep this secret).                  |
+| `DB_HOST`      | The database host (e.g., `localhost`, without port).                            |
+| `DB_USER`      | Username for your database connection.                                          |
+| `DB_PASSWORD`  | Password for your database connection.                                          |
+| `DB_NAME`      | The name of the schema to be used by AbbyBot.                                   |
+| `EMOJIS`       | A list of Discord emojis used randomly by AbbyBot. Example: `<:emoji_name:id>`  |
+
+- **Save the file:** You must save the .env file in `Python_Discord-AbbyBot` directory, between `Abby-bot.py`
+
+
+
+```plaintext
+Repository Root
+│
+├── Python_Discord-AbbyBot/
+│   ├── Abby-bot.py
+│   └── .env
+│
+└── README.md
+```
+
+- **Create the database:** Using the same credentials as the .env except for the discord token, you must connect to a `MySQL database manager`, such as <a href="https://www.mysql.com/products/workbench/">MySQL Workbench</a>, <a href="https://www.phpmyadmin.net/">phpMyAdmin</a>, <a href="https://dbeaver.io/">DBeaver</a>, etc.
+
+You must look for a couple of files found in the `SQL_Files` directory, inside this you will find two more directories:
+
+```plaintext
+Repository Root
+│
+├── Python_Discord-AbbyBot/
+│   └─ SQL_Files/
+│      ├─ insert_data/
+│      └─ tables_creation/
+│
+└── README.md
+```
+
+- **Use Creation data SQL file:** Inside the `tables_creation` directory, there is a .SQL file which has the script to create the tables necessary to store AbbyBot data.
+
+```plaintext
+Repository Root
+│
+├── Python_Discord-AbbyBot/
+│   └─ SQL_Files/
+│      └─ tables_creation/
+│         └─ abbybot.sql
+│
+└── README.md
+```
+
+Now we simply run the SQL script and the tables will be created.
+
+- **Insert Data:** To insert the necessary data into the database you created, we must return to the other directory, the one called `insert_data`. 
+
+Inside this, you will find different .SQL files:
+
+```plaintext
+Repository Root
+│
+├── Python_Discord-AbbyBot/
+│   └─ SQL_Files/
+│      └─ insert_data/
+│         ├─ abbybot_event_messages.sql
+│         ├─ abbybot_help.sql
+│         └─ abbybot_tell_story.sql
+│
+└── README.md
+```
+Here, in short, the same thing is repeated, you must open any .SQL script (regardless of the order) and execute it so that the data is inserted, try to do it only once since the tables are auto-incrementing and duplicate data could be generated.
+
+The important thing is that ALL the .SQL files are executed
+
+-Finally, the database will be ready.
+
+<p align="center">To run AbbyBot there are two ways, depending on the operating system or the Distro that you use:</p>
+
+
+
+### Windows method:
+
+- **Open "1. Create Windows environment.bat"** - will create a Python virtual environment in the path and then install AbbyBot dependencies.
+- **Open "2. Activate Windows environment.bat"** : it will activate the environment
+- **From "2. Activate Windows environment.bat" manually drag the file "3. Start Windows environment.bat" and run it**: This will start AbbyBot from the console with its environment.
+
+
+### GNU/Linux (most Distros) method:
+
+- **Check Python version:** First you have to verify the version of Python, which is at least 3.10, first we will open a terminal using alt ctrl + alt + t or simply searching for it in the applications menu.
+
+Execute 
+```plaintext
+python3 --version
+```
+the system will display the installed Python version. 
+
+- **Create virtual environment:** Using the same terminal
+
+Execute 
+```plaintext
+python3 -m venv venv
+```
+the system will display the installed Python version. 
+
+- **Start environment:** After creating the environment, run the following command to activate it:
+
+Execute 
+```plaintext
+source venv/bin/activate
+```
+
+If everything works, in your terminal you should see (venv) before the username:
+
+Execute 
+```plaintext
+(venv) user@mycomputer:
+```
+Now all that remains is to install the requirements.
+
+- **Install the requirements:** To execute all the code you must install all the requirements that AbbyBot needs, in the `requirements.txt` file located at the root of the repository you will find:
+
+```plaintext
+Repository Root
+│
+├── requirements.txt
+│
+└── README.md
+```
+
+Go to it with the terminal and the environment activated and then install the requirements using pip install:
+
+```plaintext
+pip install -r requirements.txt
+```
+
+With the `requirements already installed`, the `environment activated`, the `database created and data inserted` and the `.env with its variables ready`, all that remains is to start the main `.py` file:
+
+- **Run AbbyBot:** To run AbbyBot, we must have `all the previous steps completed`, have our `virtual environment ready and activated`, we must go to the `Python_Discord-AbbyBot` directory, within this you will find `Abby-bot.py`, which we must execute:
+
+```plaintext
+python Abby-bot.py 
+```
+And if you performed all the steps correctly, everything will be ready!
+
