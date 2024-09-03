@@ -5,8 +5,6 @@ import mysql.connector
 from dotenv import load_dotenv
 import os
 import requests
-from io import BytesIO
-from PIL import Image
 import random
 import string
 
@@ -63,24 +61,25 @@ class CatImg(commands.Cog):
 
         if categories == 1:
             url = "https://cataas.com/cat"
+            file_extension = 'png'
         elif categories == 2:
             url = "https://cataas.com/cat/gif"
+            file_extension = 'gif'
         elif categories == 3:
             url = f"https://cataas.com/cat/says/{text}?fontSize=50&fontColor=white"
+            file_extension = 'png'
 
         # Perform the GET request
         response = requests.get(url)
 
         if response.status_code == 200:
-            img_data = response.content  # Get the image content
-            img = Image.open(BytesIO(img_data))
-
             # Generate a random filename
-            filename = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8)) + '.png'
+            filename = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8)) + f'.{file_extension}'
             img_path = f'/tmp/{filename}'
 
-            # Save the image to a temporary path
-            img.save(img_path)
+            # Save the image content directly to a file
+            with open(img_path, 'wb') as f:
+                f.write(response.content)
 
             file = discord.File(img_path, filename=filename)
 
@@ -96,7 +95,7 @@ class CatImg(commands.Cog):
             await interaction.followup.send(embed=embed, file=file)
 
         else:
-            await interaction.followup.send("Failed to retrieve cat image. Please try again later." if language_id == 1 else "No se pudo recuperar la imagen del gato. Inténtelo de nuevo más tarde.", ephemeral=True)
+            await interaction.followup.send("Failed to retrieve cat image. Please try again later.", ephemeral=True)
 
         cursor.close()
         db.close()
