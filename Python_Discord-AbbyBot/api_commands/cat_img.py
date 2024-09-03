@@ -24,11 +24,12 @@ class CatImg(commands.Cog):
         discord.app_commands.Choice(name="gif", value=2),  
         discord.app_commands.Choice(name="with text", value=3),  
     ])
-
     async def catimg(self, interaction: discord.Interaction, categories: int, text: str = None):
 
+        # Defer the response to avoid the interaction timeout
+        await interaction.response.defer()
 
-    # Connect to database with dotenv variables
+        # Connect to database with dotenv variables
         db = mysql.connector.connect(
             host=os.getenv("DB_HOST"),
             user=os.getenv("DB_USER"),
@@ -44,7 +45,7 @@ class CatImg(commands.Cog):
 
         if result is None:
             # if server is not registered, send error message
-            await interaction.response.send_message("This server is not registered. Please contact the admin.", ephemeral=True)
+            await interaction.followup.send("This server is not registered. Please contact the admin.", ephemeral=True)
             cursor.close()
             db.close()
             return
@@ -54,10 +55,10 @@ class CatImg(commands.Cog):
 
         if categories == 3 and text is None:
             if language_id == 1:
-                await interaction.response.send_message("Please provide the text for the image.")
+                await interaction.followup.send("Please provide the text for the image.")
                 return
             if language_id == 2:
-                await interaction.response.send_message("Por favor proporcione el texto de la imagen.")
+                await interaction.followup.send("Por favor proporcione el texto de la imagen.")
                 return
 
         if categories == 1:
@@ -67,7 +68,6 @@ class CatImg(commands.Cog):
         elif categories == 3:
             url = f"https://cataas.com/cat/says/{text}?fontSize=50&fontColor=white"
 
-        
         # Perform the GET request
         response = requests.get(url)
 
@@ -85,19 +85,18 @@ class CatImg(commands.Cog):
             file = discord.File(img_path, filename=filename)
 
             embed = discord.Embed(
-                title="Here's your cat image! 😼" if language_id == 1 else "Aquí tiene su imagen de gato! 😼",
+                title="Here's your cat image!" if language_id == 1 else "Aquí tiene su imagen de gato!",
                 description="Enjoy your image!" if language_id == 1 else "Disfrute su imagen!",
                 color=discord.Color.random()
             )
             embed.set_image(url=f"attachment://{filename}")
             embed.set_footer(text="Powered by cataas.com" if language_id == 1 else "Imagen por cataas.com")
 
-            await interaction.response.send_message(embed=embed, file=file)
+            # Send the final response with the image
+            await interaction.followup.send(embed=embed, file=file)
 
         else:
-            await interaction.response.send_message("Failed to retrieve cat image. Please try again later. 😿" if language_id == 1 else "No se pudo recuperar la imagen del gato. Inténtelo de nuevo más tarde. 😿", ephemeral=True)
+            await interaction.followup.send("Failed to retrieve cat image. Please try again later." if language_id == 1 else "No se pudo recuperar la imagen del gato. Inténtelo de nuevo más tarde.", ephemeral=True)
 
         cursor.close()
         db.close()
-
-
