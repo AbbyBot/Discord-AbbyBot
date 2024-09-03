@@ -38,6 +38,10 @@ from chat_commands.Events_control import EventsControl
 from event_codes.Deleted_messages import Deleted_Messages
 from event_codes.Abby_mentions import Abby_mentions
 
+
+# Minigames import
+from minigames.blackjack import Blackjack
+
 # Bot Prefix default
 bot = commands.Bot(command_prefix='abbybot_', intents=discord.Intents.all())
 
@@ -172,6 +176,7 @@ async def on_ready():
     await bot.add_cog(SetLanguage(bot))
     await bot.add_cog(TellHistory(bot))
     await bot.add_cog(EventsControl(bot))
+    await bot.add_cog(Blackjack(bot))
     
     # Sync slash commands globally or to specific guilds
     try:
