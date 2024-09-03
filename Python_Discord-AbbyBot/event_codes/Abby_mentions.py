@@ -15,12 +15,12 @@ class Abby_mentions(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
 
-        # Prevent the bot from mentioning itself
-        if message.author == self.bot.user:
+        # Prevent the bot from mentioning itself or responding to replies
+        if message.author == self.bot.user or message.reference:
             return
 
-        # Check if the bot was mentioned
-        if self.bot.user.mentioned_in(message):
+        # Check if the bot was mentioned directly with @
+        if self.bot.user in message.mentions:
 
             author_id = str(message.author.id)
             guild_id = str(message.guild.id)
