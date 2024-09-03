@@ -42,6 +42,10 @@ from event_codes.Abby_mentions import Abby_mentions
 # Minigames import
 from minigames.blackjack import Blackjack
 
+
+# APIs commands import
+from api_commands.waifu_img import WaifuImg
+
 # Bot Prefix default
 bot = commands.Bot(command_prefix='abbybot_', intents=discord.Intents.all())
 
@@ -177,6 +181,8 @@ async def on_ready():
     await bot.add_cog(TellHistory(bot))
     await bot.add_cog(EventsControl(bot))
     await bot.add_cog(Blackjack(bot))
+    await bot.add_cog(WaifuImg(bot))
+    
     
     # Sync slash commands globally or to specific guilds
     try:
