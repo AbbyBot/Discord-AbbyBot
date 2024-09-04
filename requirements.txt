@@ -10,7 +10,6 @@ frozenlist==1.4.0
 idna==3.6
 multidict==6.0.4
 mysql-connector-python==9.0.0
-pillow==10.4.0
 python-dotenv==1.0.1
 requests==2.32.3
 schedule==1.2.2
