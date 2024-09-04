@@ -168,7 +168,7 @@ async def on_ready():
     # Change bot presence
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.watching, 
-        name="Bocchi the Rock!", 
+        name="www.abbybot.cl", 
     ))
 
     # Load cogs slash commands (cogs)
