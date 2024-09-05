@@ -8,7 +8,6 @@ import requests
 import random
 import string
 
-
 # Load dotenv variables
 load_dotenv()
 

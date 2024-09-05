@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 import os
 import requests
 
-
 # Load dotenv variables
 load_dotenv()
 
@@ -17,7 +16,8 @@ class NekoImg(commands.Cog):
     @app_commands.command(name="neko_img", description="Show image of a random nekomimi.")
     async def waifuimg(self, interaction: discord.Interaction):
 
-
+        # Defer the response to avoid the interaction timeout
+        await interaction.response.defer()
 
   # Connect to database with dotenv variables
         db = mysql.connector.connect(
@@ -66,16 +66,16 @@ class NekoImg(commands.Cog):
             )
 
             embed.add_field(name="Artist" if language_id == 1 else "Artista", value=f"[{artist_name}]({artist_href})", inline=False)
-            embed.add_field(name="Source" if language_id == 1 else "Recurso", value=f"[{artist_name}]({source_url})", inline=False)
+            embed.add_field(name="Source" if language_id == 1 else "Recurso", value=f"[{'Go URL' if language_id == 1 else 'Ir a la URL'}]({source_url})", inline=False)
             
             embed.set_image(url=img_neko)
             embed.set_footer(text="Powered by nekos.best API" if language_id == 1 else "Imagen por nekos.best API")
 
-            await interaction.response.send_message(embed=embed)
+            await interaction.followup.send(embed=embed)
         else:
            # Error handling when the request is not successful
-            await interaction.response.send_message("Error fetching image.", ephemeral=True)
+            await interaction.followup.send("Error fetching image.", ephemeral=True)
 
 
-
-
+        cursor.close()
+        db.close()

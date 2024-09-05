@@ -86,7 +86,9 @@ class WaifuImg(commands.Cog):
             color=discord.Color.random()
         )
         embed.set_image(url=img_waifu)
-        embed.set_footer(text="Powered by waifu.pics API" if language_id == 1 else "Imagen por API waifu.pics")
+        embed.set_footer(text="Powered by waifu.pics API" if language_id == 1 else "Imagen por waifu.pics API")
 
         await interaction.response.send_message(embed=embed)
 
+        cursor.close()
+        db.close()
