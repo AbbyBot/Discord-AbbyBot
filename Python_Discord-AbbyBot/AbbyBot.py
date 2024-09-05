@@ -46,6 +46,7 @@ from minigames.blackjack import Blackjack
 # APIs commands import
 from api_commands.waifu_img import WaifuImg
 from api_commands.cat_img import CatImg
+from api_commands.neko_img import NekoImg
 
 # Bot Prefix default
 bot = commands.Bot(command_prefix='abbybot_', intents=discord.Intents.all())
@@ -184,6 +185,7 @@ async def on_ready():
     await bot.add_cog(Blackjack(bot))
     await bot.add_cog(WaifuImg(bot))
     await bot.add_cog(CatImg(bot))
+    await bot.add_cog(NekoImg(bot))
     
     # Sync slash commands globally or to specific guilds
     try:
