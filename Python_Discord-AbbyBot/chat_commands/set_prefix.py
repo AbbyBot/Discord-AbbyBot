@@ -51,7 +51,7 @@ class SetPrefix(commands.Cog):
                 return
 
         #Update prefix
-        cursor.execute("UPDATE server_settings SET prefix = %s WHERE guild_id = %s AND prefix != %s", (text, guild_id, current_prefix))
+        cursor.execute("UPDATE server_settings SET prefix = %s WHERE guild_id = %s", (text, guild_id))
         db.commit()
 
 
