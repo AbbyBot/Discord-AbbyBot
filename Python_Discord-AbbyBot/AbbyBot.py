@@ -53,6 +53,7 @@ from api_commands.dog_img import DogImg
 # Bot Prefix default
 bot = commands.Bot(command_prefix='abbybot_', intents=discord.Intents.all())
 
+
 # Function to restart the bot
 def restart_bot():
     os.execv(sys.executable, ['python'] + sys.argv)  # Restart Python script
@@ -198,6 +199,52 @@ async def on_ready():
     except Exception as e:
         print(f"An error occurred while syncing commands: {e}")
 
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return  # Ignore bot messages
+
+    guild_id = message.guild.id  # get guild ID (Server ID)
+
+    try:
+        # Reopen DB
+        db = mysql.connector.connect(
+            host=os.getenv("DB_HOST"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            database=os.getenv("DB_NAME")
+        )
+        cursor = db.cursor()
+
+        # Query custom prefix from database
+        cursor.execute("SELECT prefix FROM server_settings WHERE guild_id = %s", (guild_id,))
+        result = cursor.fetchone()
+
+        if result:
+            prefix = result[0]
+        else:
+            prefix = 'abbybot_'  # Use the default prefix if it is not found in the database
+
+        # Check if the message starts with the prefix
+        if message.content.startswith(prefix):
+            
+            # Process the command
+            
+            await message.channel.send(f"Prefix detected! The prefix for this server is: `{prefix}`")
+
+            await bot.process_commands(message)
+
+    except mysql.connector.Error as err:
+        print(f"Error interacting with MySQL: {err}")
+
+    finally:
+
+        # close cursor or db
+        
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
 
 @bot.event
 async def on_guild_join(guild):
@@ -216,3 +263,4 @@ try:
     bot.run(token)  # Token run
 except Exception as e:
     print(f"An error has occurred: {e}") 
+
