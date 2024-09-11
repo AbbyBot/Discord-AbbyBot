@@ -31,6 +31,8 @@ from chat_commands.Ping import Ping
 from chat_commands.Code import Code
 from chat_commands.Help import Help
 from chat_commands.TellHistory import TellHistory
+from chat_commands.server_info import ServerInfo
+
 
 # settings commands imports
 from settings_commands.Set_language import SetLanguage
@@ -194,6 +196,7 @@ async def on_ready():
     await bot.add_cog(NekoImg(bot))
     await bot.add_cog(DogImg(bot))
     await bot.add_cog(SetPrefix(bot))
+    await bot.add_cog(ServerInfo(bot))
     
     # Sync slash commands globally or to specific guilds
     try:
