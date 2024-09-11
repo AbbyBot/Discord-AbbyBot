@@ -30,10 +30,13 @@ from chat_commands.RockPaperScissors import RockPaperScissors
 from chat_commands.Ping import Ping
 from chat_commands.Code import Code
 from chat_commands.Help import Help
-from chat_commands.Set_language import SetLanguage
 from chat_commands.TellHistory import TellHistory
-from chat_commands.Events_control import EventsControl
-from chat_commands.set_prefix import SetPrefix
+
+# settings commands imports
+from settings_commands.Set_language import SetLanguage
+from settings_commands.Events_control import EventsControl
+from settings_commands.set_prefix import SetPrefix
+
 
 # Events import
 from event_codes.Deleted_messages import Deleted_Messages
@@ -240,7 +243,7 @@ async def on_message(message):
     finally:
 
         # close cursor or db
-        
+
         if cursor:
             cursor.close()
         if db:
