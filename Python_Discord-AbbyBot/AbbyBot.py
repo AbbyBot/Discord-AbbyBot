@@ -115,19 +115,31 @@ def register_server(guild):
 # Function to register or update members in the dashboard table
 def register_members(guild):
     for member in guild.members:
+        # Check if are user or admin
+        is_bot = 1 if member.bot else 0  # If bot, is_bot will be 1, otherwise 0
+        is_admin = 1 if member.guild_permissions.administrator else 0  # If you are an administrator, is_admin will be 1, otherwise 0
+
+        # Check if the user is already registered in the dashboard
         cursor.execute("SELECT user_id FROM dashboard WHERE guild_id = %s AND user_id = %s", (guild.id, member.id))
         result = cursor.fetchone()
 
         if result is None:
-            cursor.execute("INSERT INTO dashboard (guild_id, user_id, user_username, user_nickname, date_joined, is_active) VALUES (%s, %s, %s, %s, NOW(), 1)",
-                           (guild.id, member.id, member.name, member.display_name))
+            # Insert the new user into the dashboard with the corresponding values
+            cursor.execute(
+                "INSERT INTO dashboard (guild_id, user_id, user_username, user_nickname, date_joined, is_active, is_bot, is_admin, user_privilege) VALUES (%s, %s, %s, %s, NOW(), 1, %s, %s, 1)",
+                (guild.id, member.id, member.name, member.display_name, is_bot, is_admin)
+            )
             db.commit()
             print(f"Member {member.name} added to dashboard for guild {guild.name}.")
         else:
-            cursor.execute("UPDATE dashboard SET user_username = %s, user_nickname = %s WHERE guild_id = %s AND user_id = %s",
-                           (member.name, member.display_name, guild.id, member.id))
+            # Update the user's values ​​if they are already registered
+            cursor.execute(
+                "UPDATE dashboard SET user_username = %s, user_nickname = %s, is_bot = %s, is_admin = %s WHERE guild_id = %s AND user_id = %s",
+                (member.name, member.display_name, is_bot, is_admin, guild.id, member.id)
+            )
             db.commit()
             print(f"Member {member.name} updated in dashboard for guild {guild.name}.")
+
 
 def update_user_status(guild):
     # Get list of users on server from database
