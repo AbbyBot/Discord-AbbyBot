@@ -204,7 +204,10 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `abbybot`.`dashboard`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `abbybot`.`dashboard` ;
+-- -----------------------------------------------------
+-- Table `abbybot`.`dashboard`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `abbybot`.`dashboard`;
 
 CREATE TABLE IF NOT EXISTS `abbybot`.`dashboard` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -221,6 +224,8 @@ CREATE TABLE IF NOT EXISTS `abbybot`.`dashboard` (
   PRIMARY KEY (`id`),
   INDEX `fk_guild_userid_idx` (`guild_id` ASC) VISIBLE,
   INDEX `fk_user_privilege_idx` (`user_privilege` ASC) VISIBLE,
+  -- Aquí agregamos el índice para user_id
+  INDEX `idx_user_id_dashboard` (`user_id` ASC),
   CONSTRAINT `fk_guild_userid`
     FOREIGN KEY (`guild_id`)
     REFERENCES `abbybot`.`server_settings` (`guild_id`)
@@ -234,11 +239,10 @@ CREATE TABLE IF NOT EXISTS `abbybot`.`dashboard` (
 ENGINE = InnoDB
 COMMENT = 'In this table all user dashboard in a server will be saved';
 
-
 -- -----------------------------------------------------
 -- Table `abbybot`.`user_roles`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `abbybot`.`user_roles` ;
+DROP TABLE IF EXISTS `abbybot`.`user_roles`;
 
 CREATE TABLE IF NOT EXISTS `abbybot`.`user_roles` (
   `id` INT NOT NULL,
@@ -257,11 +261,11 @@ CREATE TABLE IF NOT EXISTS `abbybot`.`user_roles` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_user_id`
     FOREIGN KEY (`user_id`)
-    REFERENCES `abbybot`.`dashboard` (`guild_id`)
+    REFERENCES `abbybot`.`dashboard` (`user_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'in this table all user roles are saved in any servers.';
+COMMENT = 'In this table all user roles are saved in any servers.';
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
