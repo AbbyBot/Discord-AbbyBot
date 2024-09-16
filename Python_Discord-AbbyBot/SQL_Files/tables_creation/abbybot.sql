@@ -292,7 +292,11 @@ VALUES
 
 INSERT INTO privileges (id, privilege_name, value)
 VALUES
-(1, 'Normal User', 1);
+(1, 'Normal User', 1),
+(2, 'Wishlist Contributor', 2),
+(3, 'Developer Contributor', 3),
+(4, 'Project Owner', 4);
+
 
 -- Restore previous settings
 SET SQL_MODE=@OLD_SQL_MODE;
