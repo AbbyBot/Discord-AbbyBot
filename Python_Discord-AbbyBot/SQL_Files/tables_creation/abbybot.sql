@@ -250,7 +250,6 @@ CREATE TABLE IF NOT EXISTS `user_roles` (
   `user_id` BIGINT NOT NULL,
   `role_id` BIGINT NOT NULL,
   `role_name` VARCHAR(100) NULL,
-  `assigned_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   INDEX `fk_user_roles_1_idx` (`guild_id` ASC) VISIBLE,
   INDEX `fk_user_id_idx` (`user_id` ASC),

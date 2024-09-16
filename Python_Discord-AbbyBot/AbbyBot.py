@@ -154,7 +154,7 @@ def register_user_roles(guild_id, member):
             continue  # We don't want to register the default role (such as @everyone)
 
         cursor.execute(
-            "INSERT INTO user_roles (guild_id, user_id, role_id, role_name, assigned_at) VALUES (%s, %s, %s, %s, NOW())",
+            "INSERT INTO user_roles (guild_id, user_id, role_id, role_name) VALUES (%s, %s, %s, %s)",
             (guild_id, member.id, role.id, role.name)
         )
         db.commit()
