@@ -244,8 +244,8 @@ COMMENT = 'In this table all user dashboard in a server will be saved';
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `abbybot`.`user_roles`;
 
-CREATE TABLE IF NOT EXISTS `abbybot`.`user_roles` (
-  `id` INT NOT NULL,
+CREATE TABLE IF NOT EXISTS `user_roles` (
+  `id` INT NOT NULL AUTO_INCREMENT,
   `guild_id` BIGINT NOT NULL,
   `user_id` BIGINT NOT NULL,
   `role_id` BIGINT NOT NULL,
@@ -253,20 +253,18 @@ CREATE TABLE IF NOT EXISTS `abbybot`.`user_roles` (
   `assigned_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   INDEX `fk_user_roles_1_idx` (`guild_id` ASC) VISIBLE,
-  INDEX `fk_user_id_idx` (`user_id` ASC) VISIBLE,
+  INDEX `fk_user_id_idx` (`user_id` ASC),
   CONSTRAINT `fk_user_guild`
     FOREIGN KEY (`guild_id`)
-    REFERENCES `abbybot`.`server_settings` (`guild_id`)
+    REFERENCES `server_settings` (`guild_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_user_id`
     FOREIGN KEY (`user_id`)
-    REFERENCES `abbybot`.`dashboard` (`user_id`)
+    REFERENCES `dashboard` (`user_id`)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'In this table all user roles are saved in any servers.';
-
+    ON UPDATE NO ACTION
+) ENGINE = InnoDB;
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;

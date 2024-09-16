@@ -112,12 +112,11 @@ def register_server(guild):
     register_members(guild)
 
 
-# Function to register or update members in the dashboard table
 def register_members(guild):
     for member in guild.members:
-        # Check if are user or admin
-        is_bot = 1 if member.bot else 0  # If bot, is_bot will be 1, otherwise 0
-        is_admin = 1 if member.guild_permissions.administrator else 0  # If you are an administrator, is_admin will be 1, otherwise 0
+        # Determine if the user is a bot or an administrator
+        is_bot = 1 if member.bot else 0  # If it's a bot, is_bot will be 1, otherwise 0
+        is_admin = 1 if member.guild_permissions.administrator else 0  # If the user is an admin, is_admin will be 1, otherwise 0
 
         # Check if the user is already registered in the dashboard
         cursor.execute("SELECT user_id FROM dashboard WHERE guild_id = %s AND user_id = %s", (guild.id, member.id))
@@ -132,13 +131,35 @@ def register_members(guild):
             db.commit()
             print(f"Member {member.name} added to dashboard for guild {guild.name}.")
         else:
-            # Update the user's values ​​if they are already registered
+            # Update the user's values if they are already registered
             cursor.execute(
                 "UPDATE dashboard SET user_username = %s, user_nickname = %s, is_bot = %s, is_admin = %s WHERE guild_id = %s AND user_id = %s",
                 (member.name, member.display_name, is_bot, is_admin, guild.id, member.id)
             )
             db.commit()
             print(f"Member {member.name} updated in dashboard for guild {guild.name}.")
+
+        # Now handle the user's roles
+        register_user_roles(guild.id, member)
+
+
+def register_user_roles(guild_id, member):
+    # Delete all current roles for this user in this guild (if you want to maintain synchronization)
+    cursor.execute("DELETE FROM user_roles WHERE guild_id = %s AND user_id = %s", (guild_id, member.id))
+    db.commit()
+
+    # Insert the user's current roles
+    for role in member.roles:
+        if role.is_default():
+            continue  # We don't want to register the default role (such as @everyone)
+
+        cursor.execute(
+            "INSERT INTO user_roles (guild_id, user_id, role_id, role_name, assigned_at) VALUES (%s, %s, %s, %s, NOW())",
+            (guild_id, member.id, role.id, role.name)
+        )
+        db.commit()
+        print(f"Role {role.name} added for member {member.name} in guild {guild_id}.")
+
 
 
 def update_user_status(guild):
