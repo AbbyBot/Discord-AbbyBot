@@ -1,0 +1,51 @@
+import discord
+from discord.ext import commands
+from discord import app_commands
+import mysql.connector
+from dotenv import load_dotenv
+import os
+
+# Load dotenv variables
+load_dotenv()
+
+class CommandTemplate(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @app_commands.command(name="command_name", description="Command description")
+    async def command_name(self, interaction: discord.Interaction):
+        # Connect to the database using environment variables
+        db = mysql.connector.connect(
+            host=os.getenv("DB_HOST"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            database=os.getenv("DB_NAME")
+        )
+        cursor = db.cursor()
+
+        # Get guild_id from the interaction (server ID)
+        guild_id = interaction.guild_id
+
+        # Query to check the server's language setting (obligatory field)
+        cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
+        result = cursor.fetchone()
+
+        if result is None:
+            await interaction.response.send_message("This server is not registered. Please contact the admin.", ephemeral=True)
+            cursor.close()
+            db.close()
+            return
+
+        # Process language-specific logic
+        language_id = result[0]  # The language ID from the query
+        if language_id == 1:
+            response_message = "Command executed in English."
+        elif language_id == 2:
+            response_message = "Comando ejecutado en español."
+
+        # Send the response
+        await interaction.response.send_message(response_message)
+
+        # Close the database connection
+        cursor.close()
+        db.close()
