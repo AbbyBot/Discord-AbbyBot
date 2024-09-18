@@ -153,17 +153,26 @@ def register_user_roles(guild_id, member, cursor, db):
             )
             db.commit()
 
-# Update user status (active/inactive)
+# Update user status (active/inactive) without overriding previous inactive status
 def update_user_status(guild, cursor, db):
-    cursor.execute("SELECT user_id FROM dashboard WHERE guild_id = %s", (guild.id,))
+    # Get all registered users in the database for this server
+    cursor.execute("SELECT user_id, is_active FROM dashboard WHERE guild_id = %s", (guild.id,))
     stored_users = cursor.fetchall()
 
+    # Create a set of current server members
     guild_members = {member.id for member in guild.members}
 
-    for (user_id,) in stored_users:
-        is_active = 1 if user_id in guild_members else 0
-        cursor.execute("UPDATE dashboard SET is_active = %s WHERE guild_id = %s AND user_id = %s", (is_active, guild.id, user_id))
-        db.commit()
+    # Update the status of each user
+    for user_id, is_active in stored_users:
+        # If the user is already inactive (is_active = 0), do not change its status
+        if is_active == 0:
+            continue
+
+        # If the user is on the server, mark it as active, otherwise inactive
+        new_status = 1 if user_id in guild_members else 0
+        cursor.execute("UPDATE dashboard SET is_active = %s WHERE guild_id = %s AND user_id = %s", (new_status, guild.id, user_id))
+
+    db.commit()
 
 # Discord bot setup
 bot = commands.Bot(command_prefix='abbybot_', intents=discord.Intents.all())
