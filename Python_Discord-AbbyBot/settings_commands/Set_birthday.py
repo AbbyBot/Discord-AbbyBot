@@ -9,12 +9,13 @@ import os
 # Load dotenv variables
 load_dotenv()
 
-class SetBirthday(commands.Cog):
+class SetBirthday(commands.GroupCog, group_name="birthday"):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(name="set_birthday", description="Set your birthday and AbbyBot will greet you on your birthday.")
-    async def command_name(self, interaction: discord.Interaction, month: int, day: int, year: int):
+    # Subcomando para /birthday set
+    @app_commands.command(name="set", description="Set your birthday and AbbyBot will greet you on your birthday.")
+    async def set_birthday(self, interaction: discord.Interaction, month: int, day: int, year: int):
         # Connect to the database using environment variables
         db = mysql.connector.connect(
             host=os.getenv("DB_HOST"),
@@ -65,8 +66,7 @@ class SetBirthday(commands.Cog):
             if language_id == 1:
                 await interaction.response.send_message(f"Error. Make sure you enter a valid date.", ephemeral=True)
             else:
-                await interaction.response.send_message(f"Error. Asegúrate de ingresar una fecha válida.", ephemeral=True)
-
+                await interaction.response.send_message(f"Error: {str(e)}. Asegúrate de ingresar una fecha válida.", ephemeral=True)
 
         # Close the database connection
         cursor.close()

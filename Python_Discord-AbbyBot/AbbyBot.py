@@ -25,8 +25,7 @@ db = mysql.connector.connect(
 )
 cursor = db.cursor()
 
-# Cog command import
-from chat_commands.RockPaperScissors import RockPaperScissors
+# Chat commands import
 from chat_commands.Ping import Ping
 from chat_commands.Code import Code
 from chat_commands.Help import Help
@@ -35,7 +34,7 @@ from chat_commands.server_info import ServerInfo
 from chat_commands.User_info import UserInfo
 
 
-# settings commands imports
+# Settings commands import
 from settings_commands.Set_language import SetLanguage
 from settings_commands.Events_control import EventsControl
 from settings_commands.set_prefix import SetPrefix
@@ -49,6 +48,7 @@ from event_codes.Abby_mentions import Abby_mentions
 
 # Minigames import
 from minigames.blackjack import Blackjack
+from minigames.RockPaperScissors import RockPaperScissors
 
 
 # APIs commands import
