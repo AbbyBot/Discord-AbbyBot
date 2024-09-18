@@ -7,7 +7,6 @@ import sys
 import schedule
 import time
 
-
 # Load dotenv variables
 load_dotenv()
 
@@ -220,23 +219,39 @@ async def on_ready():
     except Exception as e:
         print(f"An error occurred while syncing commands: {e}")
 
+
 @bot.event
 async def on_message(message):
     if message.author.bot:
         return
+    
+    # If message is DM
+    if isinstance(message.channel, discord.DMChannel):
+        # Embed response
 
-    guild_id = message.guild.id
-    with get_db_connection() as db:
-        cursor = db.cursor()
+        embed = discord.Embed(
+            title="Greetings!",
+            description="AbbyBot does not have a DM system, if you need to know information about the Bot, you can run */help* or go to this [Commands URL](https://abbybot.cl/commands-list).",
+            color=0xb45428
+        )
+        embed.set_footer(text="AbbyBot Project - Always here to help.")
+        
+        # Send the embed as a response
+        await message.channel.send(embed=embed)
+    else:
+        # handle regular messages on servers
+        guild_id = message.guild.id
+        with get_db_connection() as db:
+            cursor = db.cursor()
 
-        cursor.execute("SELECT prefix FROM server_settings WHERE guild_id = %s", (guild_id,))
-        result = cursor.fetchone()
+            cursor.execute("SELECT prefix FROM server_settings WHERE guild_id = %s", (guild_id,))
+            result = cursor.fetchone()
 
-        prefix = result[0] if result else 'abbybot_'
+            prefix = result[0] if result else 'abbybot_'
 
-        if message.content.startswith(prefix):
-            await message.channel.send(f"Prefix detected! The prefix for this server is: `{prefix}`")
-            await bot.process_commands(message)
+            if message.content.startswith(prefix):
+                await message.channel.send(f"Prefix detected! The prefix for this server is: `{prefix}`")
+                await bot.process_commands(message)
 
 @bot.event
 async def on_guild_join(guild):
