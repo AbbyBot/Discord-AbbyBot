@@ -292,10 +292,11 @@ VALUES
 
 INSERT INTO privileges (id, privilege_name, value)
 VALUES
-(1, 'Normal User', 1),
-(2, 'Wishlist Contributor', 2),
-(3, 'Developer Contributor', 3),
-(4, 'Project Owner', 4);
+(1, 'Normal User 🐈', 1),
+(2, 'Wishlist Contributor 🐧', 2),
+(3, 'Developer Contributor 🧑‍💼', 3),
+(4, 'Project Owner 👑', 4);
+(5, 'AbbyBot 🧡', 5);
 
 
 -- Restore previous settings
