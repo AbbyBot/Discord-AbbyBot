@@ -29,7 +29,7 @@ class UserInfo(commands.Cog):
         cursor = db.cursor()
 
         # AbbyBot ID for her Picture
-        bot_id = 1230325124411035709  # AbbyBot ID
+        bot_id = 1028065784016142398  # AbbyBot ID
 
         async def get_bot_avatar():
             # Fetch the bot's user object using the bot_id
@@ -54,9 +54,49 @@ class UserInfo(commands.Cog):
         # Process language-specific logic
         language_id = result[0]  # The language ID from the query
 
-        # Get the mentioned user's information
+        # Query to get user information from the database
+        user_info_query = """
+        SELECT u.user_username, u.user_nickname, u.user_birthday, u.is_active, u.is_admin, u.is_bot, u.user_privilege, p.privilege_name
+        FROM dashboard u
+        JOIN privileges p ON u.user_privilege = p.value
+        WHERE u.guild_id = %s AND u.user_id = %s;
+        """
+
+        cursor.execute(user_info_query, (interaction.guild_id, member.id))
+        user_info = cursor.fetchone()
+
+        if user_info:
+            username = user_info[0]
+            user_nickname = user_info[1] if user_info[1] else member.nick
+            user_birthday = user_info[2] if user_info[2] else "Unknown"
+            is_active = "Yes" if user_info[3] else "No"
+            is_admin = "Yes" if user_info[4] else "No"
+            is_bot = "Yes" if user_info[5] else "No"
+            privilege_value = user_info[6]  # Using privilege value (numeric)
+            privilege_name = user_info[7]
+        else:
+            username = member.name
+            user_nickname = member.nick
+            user_birthday = "Unknown"
+            is_active = "Unknown"
+            is_admin = "Unknown"
+            is_bot = "Unknown"
+            privilege_value = 0
+            privilege_name = "No privilege"
+
+        # Get user roles from the database
+        roles_query = """
+        SELECT role_id, role_name 
+        FROM user_roles 
+        WHERE guild_id = %s AND user_id = %s;
+        """
+        cursor.execute(roles_query, (interaction.guild_id, member.id))
+        roles_result = cursor.fetchall()
+
+        roles = ', '.join([f"<@&{role[0]}>" for role in roles_result]) if roles_result else "No roles"
+
+        # Get user Discord data (avatar, account creation date, joined date)
         avatar_url = member.display_avatar.url
-        username = member.name
         user_id = member.id
         created_at = member.created_at.strftime("%B %d, %Y")
         joined_at = member.joined_at.strftime("%B %d, %Y") if member.joined_at else "Unknown"
@@ -64,91 +104,51 @@ class UserInfo(commands.Cog):
         # Check for Nitro via Server Boosting
         has_nitro = "Yes" if member.premium_since else "No"
 
-        # Check for other badges (requires Discord.py v2.0+)
+        # Check for badges (requires Discord.py v2.0+)
         badges = [badge.name for badge in member.public_flags.all()] if member.public_flags else []
 
-        # Get database info
-        privilege_query = """
-        SELECT u.user_birthday, u.is_admin, u.is_bot, p.privilege_name, p.value
-        FROM dashboard u
-        JOIN privileges p ON u.user_privilege = p.value
-        WHERE u.guild_id = %s AND u.user_id = %s;
-        """
-        # Get user roles
-        roles_query = """
-        SELECT role_id, role_name 
-        FROM user_roles 
-        WHERE guild_id = %s AND user_id = %s;
-        """
+        # Embed colors based on privilege_value (numeric value)
+        color = {
+            1: 0x00FF00,  # Green for Normal User
+            2: 0xFFFF00,  # Yellow for Wishlist Contributor
+            3: 0xFFA500,  # Orange for Developer Contributor
+            4: 0xFF0000,  # Red for Project Owner
+            5: 0xb45428   # AbbyBot color
+        }.get(privilege_value, 0x808080)  # Default to grey if privilege_value is not found
 
-        # Execute Query before result
-        cursor.execute(privilege_query, (interaction.guild_id, member.id))
-        privilege_result = cursor.fetchone()
-
-        # Execute Role Query before result
-        cursor.execute(roles_query, (interaction.guild_id, member.id))
-        roles_result = cursor.fetchall()
-
-        user_birthday = privilege_result[0]                
-        is_admin = privilege_result[1]           
-        is_bot = privilege_result[2]                
-        privilege_name = privilege_result[3]     
-        privilege_value = privilege_result[4] 
-
-
-        # Roles result processing (list of roles)
-        roles = ', '.join([f"<@&{role[0]}>" for role in roles_result]) if roles_result else "No roles"
-
-        # Embed colors
-
-        if privilege_value == 1:
-            color = 0x00FF00  # Green Normal Users
-        elif privilege_value == 2:
-            color = 0xFFFF00  # Yellow Wishlist Contributor
-        elif privilege_value == 3:
-            color = 0xFFA500  # Orange Developer Contributor
-        elif privilege_value == 4:
-            color = 0xFF0000  # Red Project Owner
-        elif privilege_value == 5:
-            color = 0xb45428  # AbbyBot color
-        else:
-            color = 0x808080 # Grey color
-
-        # Construct the embed
+        # Construct the embed based on the server language
         if language_id == 1:  # English
             embed = discord.Embed(title=f"User Information for {username}", color=color)
             embed.set_thumbnail(url=avatar_url)
             embed.add_field(name="Username", value=username, inline=True)
+            embed.add_field(name="User Nickname", value=user_nickname, inline=True)  # Nickname included
             embed.add_field(name="User ID", value=user_id, inline=True)
             embed.add_field(name="Account Created", value=created_at, inline=True)
             embed.add_field(name="Joined Server", value=joined_at, inline=True)
             embed.add_field(name="Server Booster", value=has_nitro, inline=True)
             embed.add_field(name="Badges", value=", ".join(badges) if badges else "No badges", inline=True)
             embed.add_field(name="AbbyBot Privilege", value=privilege_name, inline=True)
-            if user_birthday is None:
-                embed.add_field(name="User Birthday", value="Unknown", inline=True)
-            else:
-                embed.add_field(name="User Birthday", value=user_birthday, inline=True)
-            embed.add_field(name=f"{username} has admin on server?", value="Yes" if is_admin == 1 else "No", inline=True)
-            embed.add_field(name=f"{username} are a bot?", value="Yes" if is_bot == 1 else "No", inline=True)
+            embed.add_field(name="User Birthday", value=user_birthday, inline=True)
+            embed.add_field(name="Is Active?", value=is_active, inline=True)
+            embed.add_field(name="Is Admin?", value=is_admin, inline=True)
+            embed.add_field(name="Is Bot?", value=is_bot, inline=True)
             embed.add_field(name="Roles", value=roles, inline=True)
 
         elif language_id == 2:  # Spanish
             embed = discord.Embed(title=f"Información del Usuario {username}", color=color)
             embed.set_thumbnail(url=avatar_url)
             embed.add_field(name="Nombre de usuario", value=username, inline=True)
+            embed.add_field(name="Apodo", value=user_nickname, inline=True)  # Nickname included
             embed.add_field(name="ID de usuario", value=user_id, inline=True)
             embed.add_field(name="Cuenta creada", value=created_at, inline=True)
             embed.add_field(name="Se unió al servidor", value=joined_at, inline=True)
             embed.add_field(name="Impulsor del servidor", value="Sí" if has_nitro == "Yes" else "No", inline=True)
             embed.add_field(name="Insignias", value=", ".join(badges) if badges else "Sin insignias", inline=True)
-            embed.add_field(name="Privilegio de AbbyBot", value=f"**{privilege_name}**", inline=True)
-            if user_birthday is None:
-                embed.add_field(name="Fecha de Cumpleaños", value="Desconocida", inline=True)
-            else:
-                embed.add_field(name="Fecha de Cumpleaños", value=user_birthday, inline=True)
-            embed.add_field(name=f"{username} es admin en el servidor?", value="Si" if is_admin == 1 else "No", inline=True)
-            embed.add_field(name=f"{username} es un bot?", value="Si" if is_bot == 1 else "No", inline=True)
+            embed.add_field(name="Privilegio de AbbyBot", value=privilege_name, inline=True)
+            embed.add_field(name="Fecha de Cumpleaños", value=user_birthday, inline=True)
+            embed.add_field(name="Está Activo?", value=is_active, inline=True)
+            embed.add_field(name="Es Admin?", value=is_admin, inline=True)
+            embed.add_field(name="Es Bot?", value=is_bot, inline=True)
             embed.add_field(name="Roles", value=roles, inline=True)
 
         # Get the bot's avatar (must use await since it's an async function)
