@@ -25,14 +25,13 @@ class Help(commands.Cog):
         )
         cursor = db.cursor()
 
-        # Check if server is registered
-        guild_id = interaction.guild_id
-        cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
-        result = cursor.fetchone()
-
         # Get guild_id and user_id from the interaction
         guild_id = interaction.guild_id
         user_id = interaction.user.id
+
+        # Check if server is registered
+        cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
+        result = cursor.fetchone()
 
         # Check if the user is active (is_active = 1) or inactive (is_active = 0)
         cursor.execute("SELECT is_active FROM dashboard WHERE guild_id = %s AND user_id = %s", (guild_id, user_id))
