@@ -54,6 +54,7 @@ class CommandTemplate(commands.Cog):
             
             cursor.close()
             db.close()
+            await interaction.response.send_message("Request Rejected: Your account has been listed as **inactive** in the AbbyBot system, please check your DM.", ephemeral=True)
             return
 
         # Query to check the server's language setting (obligatory field)
