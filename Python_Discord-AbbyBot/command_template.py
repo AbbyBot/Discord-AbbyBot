@@ -4,7 +4,7 @@ from discord import app_commands
 import mysql.connector
 from dotenv import load_dotenv
 import os
-from embeds import account_inactive_embed # import embed system
+from embeds.embeds import account_inactive_embed # import embed system
 
 # Load dotenv variables
 load_dotenv()

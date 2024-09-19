@@ -7,6 +7,7 @@ import os
 import requests
 import random
 import string
+from embeds.embeds import account_inactive_embed
 
 # Load dotenv variables
 load_dotenv()
@@ -15,7 +16,7 @@ class CatImg(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(name="cat_img", description="Show images of random cats 😼")
+    @app_commands.command(name="cat-image", description="Show images of random cats 😼")
     @app_commands.choices(categories=[
         discord.app_commands.Choice(name="cat", value=1),
         discord.app_commands.Choice(name="gif", value=2),  
@@ -23,8 +24,6 @@ class CatImg(commands.Cog):
     ])
     async def catimg(self, interaction: discord.Interaction, categories: int, text: str = None):
 
-        # Defer the response to avoid the interaction timeout
-        await interaction.response.defer()
 
         # Connect to database with dotenv variables
         db = mysql.connector.connect(
@@ -35,20 +34,51 @@ class CatImg(commands.Cog):
         )
         cursor = db.cursor()
 
-        # Check if server is registered
+          # Get guild_id and user_id from the interaction
         guild_id = interaction.guild_id
-        cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
+        user_id = interaction.user.id
+
+        # Check if the user is active (is_active = 1) or inactive (is_active = 0)
+        cursor.execute("SELECT is_active FROM dashboard WHERE guild_id = %s AND user_id = %s", (guild_id, user_id))
         result = cursor.fetchone()
 
         if result is None:
-            # if server is not registered, send error message
-            await interaction.followup.send("This server is not registered. Please contact the admin.", ephemeral=True)
+            await interaction.response.send_message("User not found in the database.", ephemeral=True)
             cursor.close()
             db.close()
             return
 
-        # Get the language_id of the server
-        language_id = result[0]
+        # If the user is inactive (is_active = 0), send an embed in DM and exit
+        is_active = result[0]
+        if is_active == 0:
+            try:
+                # Send the embed message as a DM
+                await interaction.user.send(embed=account_inactive_embed())
+                print(f"User {interaction.user} is inactive and notified.")
+            except discord.Forbidden:
+                print(f"Could not send DM to {interaction.user}. They may have DMs disabled.")
+
+            await interaction.response.send_message("Request Rejected: Your account has been listed as **inactive** in the AbbyBot system, please check your DM.", ephemeral=True)
+
+            cursor.close()
+            db.close()
+            return
+        else: # user are not "banned"
+            await interaction.response.defer()
+        
+
+        # Query to check the server's language setting (obligatory field)
+        cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
+        result = cursor.fetchone()
+
+        if result is None:
+            await interaction.response.send_message("This server is not registered. Please contact the admin.", ephemeral=True)
+            cursor.close()
+            db.close()
+            return
+
+        # Process language-specific logic
+        language_id = result[0]  # The language ID from the query
 
         if categories == 3 and text is None:
             if language_id == 1:
