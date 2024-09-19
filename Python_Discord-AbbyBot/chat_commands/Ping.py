@@ -71,18 +71,18 @@ class Ping(commands.Cog):
             db.close()
             return
         
-        # Check if server is registered
+        # Query to check the server's language setting (obligatory field)
         cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
         result = cursor.fetchone()
 
         if result is None:
-            # if server is not registered, send error message
             await interaction.response.send_message("This server is not registered. Please contact the admin.", ephemeral=True)
             cursor.close()
             db.close()
             return
-
+        
         # Get server language
+        
         language_id = result[0]  # Get language ID
 
         # Validate the language
