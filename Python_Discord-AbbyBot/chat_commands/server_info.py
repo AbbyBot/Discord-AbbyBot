@@ -66,8 +66,6 @@ class ServerInfo(commands.Cog):
             cursor.close()
             db.close()
             return
-        else: # user are not "banned"
-            await interaction.response.defer()
 
 
         server_data = """
