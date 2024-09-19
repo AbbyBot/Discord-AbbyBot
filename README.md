@@ -1,15 +1,14 @@
 # <p align="center">Discord AbbyBot</p>
 
 <p style="text-align: center;"><strong>Entertainment, Administration, Multilingual, Storytelling, A charismatic survivor girl.</strong></p>
-<div align="center">
 
+<div align="center">
 powered by
 
 ![image]( https://img.shields.io/badge/Discord.py-7289DA?style=for-the-badge&logo=discord&logoColor=white)
 ![image]( https://img.shields.io/badge/Python-3.10.12-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![image]( https://img.shields.io/badge/MySQL-brown?style=for-the-badge&logo=mysql&logoColor=white)
 ![image]( https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
-![image]( https://img.shields.io/badge/Krita-203759?style=for-the-badge&logo=krita&logoColor=red)
 ![image]( https://img.shields.io/badge/dotenv-darkgreen?style=for-the-badge&logo=dotenv&logoColor=EEF37B)
 </div>
 
@@ -179,7 +178,7 @@ With the `requirements already installed`, the `environment activated`, the `dat
 - **Run AbbyBot:** To run AbbyBot, we must have `all the previous steps completed`, have our `virtual environment ready and activated`, we must go to the `Python_Discord-AbbyBot` directory, within this you will find `Abby-bot.py`, which we must execute:
 
 ```plaintext
-python Abby-bot.py 
+python AbbyBot.py 
 ```
 And if you performed all the steps correctly, everything will be ready!
 
