@@ -59,8 +59,12 @@ class Ping(commands.Cog):
         is_active = result[0]
         if is_active == 0:
             try:
-                # Send the embed message as a DM
-                await interaction.user.send(embed=account_inactive_embed())
+                # Get the embed and file
+                embed, file = account_inactive_embed()
+
+                # Send the embed and the file as DM
+                await interaction.user.send(embed=embed, file=file)
+                
                 print(f"User {interaction.user} is inactive and notified.")
             except discord.Forbidden:
                 print(f"Could not send DM to {interaction.user}. They may have DMs disabled.")
