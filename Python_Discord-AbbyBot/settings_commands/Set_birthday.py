@@ -13,7 +13,6 @@ class SetBirthday(commands.GroupCog, group_name="birthday"):
     def __init__(self, bot):
         self.bot = bot
 
-    # Subcomando para /birthday set
     @app_commands.command(name="set", description="Set your birthday and AbbyBot will greet you on your birthday.")
     async def set_birthday(self, interaction: discord.Interaction, month: int, day: int, year: int):
         # Connect to the database using environment variables
