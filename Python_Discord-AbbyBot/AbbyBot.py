@@ -37,11 +37,13 @@ from settings_commands.Events_control import EventsControl
 from settings_commands.set_prefix import SetPrefix
 from settings_commands.Set_birthday import SetBirthday
 from settings_commands.Set_birthday_channel import SetBirthDayChannel
+from settings_commands.Set_logs_channel import SetLogsChannel
 
 
 # Events import
 from event_codes.Deleted_messages import Deleted_Messages
 from event_codes.Abby_mentions import Abby_mentions
+
 
 
 # Minigames import
@@ -214,6 +216,7 @@ async def on_ready():
     await bot.add_cog(UserInfo(bot))
     await bot.add_cog(SetBirthday(bot))
     await bot.add_cog(SetBirthDayChannel(bot))
+    await bot.add_cog(SetLogsChannel(bot))
 
     try:
         synced_commands = await bot.tree.sync()
