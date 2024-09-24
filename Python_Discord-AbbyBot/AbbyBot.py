@@ -36,6 +36,7 @@ from settings_commands.Set_language import SetLanguage
 from settings_commands.Events_control import EventsControl
 from settings_commands.set_prefix import SetPrefix
 from settings_commands.Set_birthday import SetBirthday
+from settings_commands.Set_birthday_channel import SetBirthDayChannel
 
 
 # Events import
@@ -212,6 +213,7 @@ async def on_ready():
     await bot.add_cog(ServerInfo(bot))
     await bot.add_cog(UserInfo(bot))
     await bot.add_cog(SetBirthday(bot))
+    await bot.add_cog(SetBirthDayChannel(bot))
 
     try:
         synced_commands = await bot.tree.sync()
