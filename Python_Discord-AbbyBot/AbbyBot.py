@@ -21,7 +21,6 @@ db_config = {
     "database": os.getenv("DB_NAME")
 }
 
-
 # Chat commands import
 from chat_commands.Ping import Ping
 from chat_commands.Code import Code
@@ -29,7 +28,6 @@ from chat_commands.Help import Help
 from chat_commands.TellHistory import TellHistory
 from chat_commands.server_info import ServerInfo
 from chat_commands.User_info import UserInfo
-
 
 # Settings commands import
 from settings_commands.Set_language import SetLanguage
@@ -39,25 +37,19 @@ from settings_commands.Set_birthday import SetBirthday
 from settings_commands.Set_birthday_channel import SetBirthDayChannel
 from settings_commands.Set_logs_channel import SetLogsChannel
 
-
 # Events import
 from event_codes.Deleted_messages import Deleted_Messages
 from event_codes.Abby_mentions import Abby_mentions
 
-
-
 # Minigames import
 from minigames.blackjack import Blackjack
 from minigames.RockPaperScissors import RockPaperScissors
-
 
 # APIs commands import
 from api_commands.waifu_img import WaifuImg
 from api_commands.cat_img import CatImg
 from api_commands.neko_img import NekoImg
 from api_commands.dog_img import DogImg
-
-
 
 # Establish MySQL connection
 def get_db_connection():
@@ -77,7 +69,7 @@ def schedule_restart():
 
 # Ensure necessary tables exist in the database
 def ensure_tables_exist(cursor):
-    tables = ['server_settings', 'dashboard', 'languages', 'mention_counter']
+    tables = ['server_settings', 'dashboard', 'user_profile', 'mention_counter']
     for table in tables:
         cursor.execute(f"SHOW TABLES LIKE '{table}';")
         if cursor.fetchone() is None:
@@ -119,22 +111,34 @@ def register_members(guild, cursor, db):
         is_bot = 1 if member.bot else 0
         is_admin = 1 if member.guild_permissions.administrator else 0
 
-        cursor.execute("SELECT user_id FROM dashboard WHERE guild_id = %s AND user_id = %s", (guild.id, member.id))
+        # Register or update user in user_profile (global data)
+        cursor.execute("SELECT id FROM user_profile WHERE user_id = %s", (member.id,))
+        if cursor.fetchone() is None:
+            cursor.execute("""
+                INSERT INTO user_profile 
+                (user_id, user_username, user_privilege) 
+                VALUES (%s, %s, 1)
+                """, 
+                (member.id, member.name)
+            )
+        
+        # Register or update member data in dashboard (server-specific data)
+        cursor.execute("SELECT id FROM dashboard WHERE guild_id = %s AND user_profile_id = (SELECT id FROM user_profile WHERE user_id = %s)", (guild.id, member.id))
         if cursor.fetchone() is None:
             cursor.execute("""
                 INSERT INTO dashboard 
-                (guild_id, user_id, user_username, user_nickname, date_joined, is_active, is_bot, is_admin, user_privilege) 
-                VALUES (%s, %s, %s, %s, NOW(), 1, %s, %s, 1)
+                (guild_id, user_profile_id, is_active, is_bot, is_admin) 
+                VALUES (%s, (SELECT id FROM user_profile WHERE user_id = %s), 1, %s, %s)
                 """, 
-                (guild.id, member.id, member.name, member.display_name, is_bot, is_admin)
+                (guild.id, member.id, is_bot, is_admin)
             )
         else:
             cursor.execute("""
                 UPDATE dashboard 
-                SET user_username = %s, user_nickname = %s, is_bot = %s, is_admin = %s 
-                WHERE guild_id = %s AND user_id = %s
+                SET is_bot = %s, is_admin = %s 
+                WHERE guild_id = %s AND user_profile_id = (SELECT id FROM user_profile WHERE user_id = %s)
                 """, 
-                (member.name, member.display_name, is_bot, is_admin, guild.id, member.id)
+                (is_bot, is_admin, guild.id, member.id)
             )
 
         db.commit()
@@ -142,14 +146,14 @@ def register_members(guild, cursor, db):
 
 # Register or update user roles
 def register_user_roles(guild_id, member, cursor, db):
-    cursor.execute("DELETE FROM user_roles WHERE guild_id = %s AND user_id = %s", (guild_id, member.id))
+    cursor.execute("DELETE FROM user_roles WHERE guild_id = %s AND user_profile_id = (SELECT id FROM user_profile WHERE user_id = %s)", (guild_id, member.id))
     db.commit()
 
     for role in member.roles:
         if not role.is_default():
             cursor.execute("""
-                INSERT INTO user_roles (guild_id, user_id, role_id, role_name) 
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO user_roles (guild_id, user_profile_id, role_id, role_name) 
+                VALUES (%s, (SELECT id FROM user_profile WHERE user_id = %s), %s, %s)
                 """, 
                 (guild_id, member.id, role.id, role.name)
             )
@@ -158,7 +162,7 @@ def register_user_roles(guild_id, member, cursor, db):
 # Update user status (active/inactive) without overriding previous inactive status
 def update_user_status(guild, cursor, db):
     # Get all registered users in the database for this server
-    cursor.execute("SELECT user_id, is_active FROM dashboard WHERE guild_id = %s", (guild.id,))
+    cursor.execute("SELECT user_profile_id, is_active FROM dashboard WHERE guild_id = %s", (guild.id,))
     stored_users = cursor.fetchall()
 
     # Create a set of current server members
@@ -172,7 +176,7 @@ def update_user_status(guild, cursor, db):
 
         # If the user is on the server, mark it as active, otherwise inactive
         new_status = 1 if user_id in guild_members else 0
-        cursor.execute("UPDATE dashboard SET is_active = %s WHERE guild_id = %s AND user_id = %s", (new_status, guild.id, user_id))
+        cursor.execute("UPDATE dashboard SET is_active = %s WHERE guild_id = %s AND user_profile_id = (SELECT id FROM user_profile WHERE user_id = %s)", (new_status, guild.id, user_id))
 
     db.commit()
 
@@ -224,7 +228,6 @@ async def on_ready():
     except Exception as e:
         print(f"An error occurred while syncing commands: {e}")
 
-
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -232,16 +235,12 @@ async def on_message(message):
     
     # If message is DM
     if isinstance(message.channel, discord.DMChannel):
-        # Embed response
-
         embed = discord.Embed(
             title="Greetings!",
             description="AbbyBot does not have a DM system, if you need to know information about the Bot, you can run */help* or go to this [Commands URL](https://abbybot.cl/commands-list).",
             color=0xb45428
         )
         embed.set_footer(text="AbbyBot Project - Always here to help.")
-        
-        # Send the embed as a response
         await message.channel.send(embed=embed)
     else:
         # handle regular messages on servers
@@ -258,12 +257,42 @@ async def on_message(message):
                 await message.channel.send(f"Prefix detected! The prefix for this server is: `{prefix}`")
                 await bot.process_commands(message)
 
+
+
+@bot.event
+async def on_guild_remove(guild):
+    # Delete server data when AbbyBot is kicked
+    with get_db_connection() as db:
+        cursor = db.cursor()
+        
+        try:
+            # Delete records in the `mention_counter` table related to the server
+            cursor.execute("DELETE FROM mention_counter WHERE user_server = %s", (guild.id,))
+            
+            # Delete server-related `user_roles` records
+            cursor.execute("DELETE FROM user_roles WHERE guild_id = %s", (guild.id,))
+            
+            # Delete server-related `dashboard` logs
+            cursor.execute("DELETE FROM dashboard WHERE guild_id = %s", (guild.id,))
+            
+            # Finally, remove the server from the `server_settings` table
+            cursor.execute("DELETE FROM server_settings WHERE guild_id = %s", (guild.id,))
+            
+            # Commit changes
+            db.commit()
+            print(f"All data related to server '{guild.name}' (ID: {guild.id}) has been deleted.")
+        except Exception as e:
+            db.rollback()  # Rollback if something fails
+            print(f"Error deleting data for server '{guild.name}' (ID: {guild.id}): {e}")
+
 @bot.event
 async def on_guild_join(guild):
+    # Reuse existing event to register servers
     with get_db_connection() as db:
         cursor = db.cursor()
         register_server(guild, cursor, db)
     print(f"Joined and registered new server: {guild.name}")
+
 
 @bot.event
 async def on_close():
