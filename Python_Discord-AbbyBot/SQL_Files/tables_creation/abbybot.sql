@@ -1,23 +1,13 @@
--- MySQL Script modified for user data structure improvements
--- Date: September 2024
-
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
 -- -----------------------------------------------------
--- Schema abbybot
+-- Table `languages`
 -- -----------------------------------------------------
-DROP SCHEMA IF EXISTS `abbybot`;
-CREATE SCHEMA IF NOT EXISTS `abbybot`;
-USE `abbybot`;
+DROP TABLE IF EXISTS `languages`;
 
--- -----------------------------------------------------
--- Table `abbybot`.`languages`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `abbybot`.`languages`;
-
-CREATE TABLE IF NOT EXISTS `abbybot`.`languages` (
+CREATE TABLE IF NOT EXISTS `languages` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `language_code` VARCHAR(5) NOT NULL,
   `language_name` VARCHAR(45) NOT NULL,
@@ -26,11 +16,11 @@ ENGINE = InnoDB
 COMMENT = 'Stores available languages like English (en) and Spanish (es).';
 
 -- -----------------------------------------------------
--- Table `abbybot`.`server_settings`
+-- Table `server_settings`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `abbybot`.`server_settings`;
+DROP TABLE IF EXISTS `server_settings`;
 
-CREATE TABLE IF NOT EXISTS `abbybot`.`server_settings` (
+CREATE TABLE IF NOT EXISTS `server_settings` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `guild_id` BIGINT NOT NULL,
   `guild_name` VARCHAR(100) NOT NULL,
@@ -49,18 +39,18 @@ CREATE TABLE IF NOT EXISTS `abbybot`.`server_settings` (
   UNIQUE INDEX `guild_id_UNIQUE` (`guild_id` ASC) VISIBLE,
   CONSTRAINT `fk_guild_language`
     FOREIGN KEY (`guild_language`)
-    REFERENCES `abbybot`.`languages` (`id`)
+    REFERENCES `languages` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Stores server-specific settings for AbbyBot.';
 
 -- -----------------------------------------------------
--- Table `abbybot`.`categories`
+-- Table `categories`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `abbybot`.`categories`;
+DROP TABLE IF EXISTS `categories`;
 
-CREATE TABLE IF NOT EXISTS `abbybot`.`categories` (
+CREATE TABLE IF NOT EXISTS `categories` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `category` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`id`))
@@ -68,11 +58,11 @@ ENGINE = InnoDB
 COMMENT = 'Stores categories for dialogues, like About Her, Lore, Advice.';
 
 -- -----------------------------------------------------
--- Table `abbybot`.`dialogues`
+-- Table `dialogues`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `abbybot`.`dialogues`;
+DROP TABLE IF EXISTS `dialogues`;
 
-CREATE TABLE IF NOT EXISTS `abbybot`.`dialogues` (
+CREATE TABLE IF NOT EXISTS `dialogues` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `category_id` INT NOT NULL,
   `language_id` INT NOT NULL,
@@ -82,23 +72,23 @@ CREATE TABLE IF NOT EXISTS `abbybot`.`dialogues` (
   INDEX `fk_categories_idx` (`category_id` ASC) VISIBLE,
   CONSTRAINT `fk_languages`
     FOREIGN KEY (`language_id`)
-    REFERENCES `abbybot`.`languages` (`id`)
+    REFERENCES `languages` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_categories`
     FOREIGN KEY (`category_id`)
-    REFERENCES `abbybot`.`categories` (`id`)
+    REFERENCES `categories` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Stores dialogue messages that AbbyBot says in different languages.';
 
 -- -----------------------------------------------------
--- Table `abbybot`.`help`
+-- Table `help`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `abbybot`.`help`;
+DROP TABLE IF EXISTS `help`;
 
-CREATE TABLE IF NOT EXISTS `abbybot`.`help` (
+CREATE TABLE IF NOT EXISTS `help` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `command_code` VARCHAR(45) NOT NULL,
   `command_description` VARCHAR(255) NOT NULL,
@@ -108,18 +98,18 @@ CREATE TABLE IF NOT EXISTS `abbybot`.`help` (
   INDEX `fk_language_id_idx` (`language_id` ASC) VISIBLE,
   CONSTRAINT `fk_language_id`
     FOREIGN KEY (`language_id`)
-    REFERENCES `abbybot`.`languages` (`id`)
+    REFERENCES `languages` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Stores help command descriptions for different languages.';
 
 -- -----------------------------------------------------
--- Table `abbybot`.`type_event_message`
+-- Table `type_event_message`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `abbybot`.`type_event_message`;
+DROP TABLE IF EXISTS `type_event_message`;
 
-CREATE TABLE IF NOT EXISTS `abbybot`.`type_event_message` (
+CREATE TABLE IF NOT EXISTS `type_event_message` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `type_message` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`id`))
@@ -127,11 +117,11 @@ ENGINE = InnoDB
 COMMENT = 'Stores types for event messages like normal, angry, forgive.';
 
 -- -----------------------------------------------------
--- Table `abbybot`.`event_message`
+-- Table `event_message`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `abbybot`.`event_message`;
+DROP TABLE IF EXISTS `event_message`;
 
-CREATE TABLE IF NOT EXISTS `abbybot`.`event_message` (
+CREATE TABLE IF NOT EXISTS `event_message` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `type_id` INT NOT NULL,
   `language_id` INT NOT NULL,
@@ -141,23 +131,23 @@ CREATE TABLE IF NOT EXISTS `abbybot`.`event_message` (
   INDEX `fk_language_idx` (`language_id` ASC) VISIBLE,
   CONSTRAINT `fk_type`
     FOREIGN KEY (`type_id`)
-    REFERENCES `abbybot`.`type_event_message` (`id`)
+    REFERENCES `type_event_message` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_language`
     FOREIGN KEY (`language_id`)
-    REFERENCES `abbybot`.`languages` (`id`)
+    REFERENCES `languages` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Stores event messages like mentions, deleted messages, etc.';
 
 -- -----------------------------------------------------
--- Table `abbybot`.`mention_counter`
+-- Table `mention_counter`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `abbybot`.`mention_counter`;
+DROP TABLE IF EXISTS `mention_counter`;
 
-CREATE TABLE IF NOT EXISTS `abbybot`.`mention_counter` (
+CREATE TABLE IF NOT EXISTS `mention_counter` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `user_id` BIGINT NOT NULL,
   `user_server` BIGINT NOT NULL,
@@ -167,18 +157,18 @@ CREATE TABLE IF NOT EXISTS `abbybot`.`mention_counter` (
   UNIQUE INDEX `index2` (`user_id` ASC, `user_server` ASC) VISIBLE,
   CONSTRAINT `fk_user_server`
     FOREIGN KEY (`user_server`)
-    REFERENCES `abbybot`.`server_settings` (`guild_id`)
+    REFERENCES `server_settings` (`guild_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Stores mention counts per user per server.';
 
 -- -----------------------------------------------------
--- Table `abbybot`.`privileges`
+-- Table `privileges`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `abbybot`.`privileges`;
+DROP TABLE IF EXISTS `privileges`;
 
-CREATE TABLE IF NOT EXISTS `abbybot`.`privileges` (
+CREATE TABLE IF NOT EXISTS `privileges` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `privilege_name` VARCHAR(45) NOT NULL,
   `value` INT NOT NULL,
@@ -187,7 +177,7 @@ ENGINE = InnoDB
 COMMENT = 'Stores privilege levels for users.';
 
 -- -----------------------------------------------------
--- New Table `abbybot`.`user_profile` (global user data)
+-- Table `user_profile` (global user data)
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `user_profile` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -199,16 +189,16 @@ CREATE TABLE IF NOT EXISTS `user_profile` (
   UNIQUE (`user_id`),
   CONSTRAINT `fk_user_privilege`
     FOREIGN KEY (`user_privilege`)
-    REFERENCES `abbybot`.`privileges` (`id`)
+    REFERENCES `privileges` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Stores global user data like birthday and privileges.';
 
 -- -----------------------------------------------------
--- Modified Table `abbybot`.`dashboard` (server-specific user data)
+-- Table `dashboard` (server-specific user data)
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `abbybot`.`dashboard`;
+DROP TABLE IF EXISTS `dashboard`;
 
 CREATE TABLE IF NOT EXISTS `dashboard` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -222,16 +212,16 @@ CREATE TABLE IF NOT EXISTS `dashboard` (
   FOREIGN KEY (`user_profile_id`) REFERENCES `user_profile` (`id`),
   CONSTRAINT `fk_guild_userid`
     FOREIGN KEY (`guild_id`)
-    REFERENCES `abbybot`.`server_settings` (`guild_id`)
+    REFERENCES `server_settings` (`guild_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Stores server-specific user data, like admin status.';
 
 -- -----------------------------------------------------
--- Modified Table `abbybot`.`user_roles` (server-specific user roles)
+-- Table `user_roles` (server-specific user roles)
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `abbybot`.`user_roles`;
+DROP TABLE IF EXISTS `user_roles`;
 
 CREATE TABLE IF NOT EXISTS `user_roles` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -241,7 +231,7 @@ CREATE TABLE IF NOT EXISTS `user_roles` (
   `role_name` VARCHAR(100) NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_user_roles_1_idx` (`guild_id` ASC),
-  FOREIGN KEY (`guild_id`) REFERENCES `abbybot`.`server_settings` (`guild_id`),
+  FOREIGN KEY (`guild_id`) REFERENCES `server_settings` (`guild_id`),
   FOREIGN KEY (`user_profile_id`) REFERENCES `user_profile` (`id`)
 ) ENGINE = InnoDB
 COMMENT = 'Stores user roles per server.';
