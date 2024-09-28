@@ -51,7 +51,7 @@ class SetBirthday(commands.GroupCog, group_name="birthday"):
         try:
             user_birthday_date = datetime(year, month, day)
             
-            cursor.execute("UPDATE abbybot.dashboard SET user_birthday = %s WHERE user_id = %s;", (user_birthday_date, user_id))
+            cursor.execute("UPDATE user_profile SET user_birthday = %s WHERE user_id = %s;", (user_birthday_date, user_id))
             db.commit()
 
             # Send response based on the language setting
