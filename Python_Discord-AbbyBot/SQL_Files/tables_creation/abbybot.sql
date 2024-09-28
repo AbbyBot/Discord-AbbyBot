@@ -35,15 +35,19 @@ CREATE TABLE IF NOT EXISTS `server_settings` (
   `guild_language` INT NOT NULL,
   `default_bot_role_id` BIGINT NULL,
   `default_role_id` BIGINT NULL,
+  `guild_icon_url` VARCHAR(255) NULL DEFAULT NULL, 
+  `guild_icon_last_updated` DATETIME NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `guild_id_UNIQUE` (`guild_id` ASC) VISIBLE,
   CONSTRAINT `fk_guild_language`
     FOREIGN KEY (`guild_language`)
     REFERENCES `languages` (`id`)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON UPDATE NO ACTION
+)
 ENGINE = InnoDB
-COMMENT = 'Stores server-specific settings for AbbyBot.';
+COMMENT = 'Stores server-specific settings for AbbyBot, including server icons.';
+
 
 -- -----------------------------------------------------
 -- Table `categories`
