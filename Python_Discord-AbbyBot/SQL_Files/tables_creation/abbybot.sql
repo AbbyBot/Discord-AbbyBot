@@ -184,6 +184,7 @@ CREATE TABLE IF NOT EXISTS `user_profile` (
   `user_id` BIGINT NOT NULL,
   `user_username` VARCHAR(45) NOT NULL,
   `user_birthday` DATE NULL DEFAULT NULL,
+  `is_active` TINYINT NOT NULL DEFAULT 1,
   `user_privilege` INT NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   UNIQUE (`user_id`),
@@ -204,7 +205,6 @@ CREATE TABLE IF NOT EXISTS `dashboard` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `guild_id` BIGINT NOT NULL,
   `user_profile_id` INT NOT NULL,  -- Links to user_profile
-  `is_active` TINYINT NOT NULL DEFAULT 1,
   `is_admin` TINYINT NOT NULL DEFAULT 0,
   `is_bot` TINYINT NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
