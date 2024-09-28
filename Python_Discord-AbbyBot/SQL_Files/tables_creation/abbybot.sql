@@ -179,6 +179,9 @@ COMMENT = 'Stores privilege levels for users.';
 -- -----------------------------------------------------
 -- Table `user_profile` (global user data)
 -- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `user_profile`;
+
 CREATE TABLE IF NOT EXISTS `user_profile` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `user_id` BIGINT NOT NULL,
