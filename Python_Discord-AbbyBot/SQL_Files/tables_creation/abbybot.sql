@@ -271,7 +271,7 @@ COMMENT = 'Stores available themes for AbbyBot customization.';
 -- Insert initial themes
 INSERT INTO AbbyBot_Themes (id, title)
 VALUES
-(1, 'Abby-Theme'),
+(1, 'Abby-Theme');
 
 INSERT INTO languages (id, language_code, language_name)
 VALUES

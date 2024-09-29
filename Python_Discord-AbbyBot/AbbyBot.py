@@ -86,7 +86,6 @@ def ensure_tables_exist(cursor):
 IMAGE_FOLDER = os.getenv('IMAGE_FOLDER_PATH')
 
 # Register new server or update an existing server
-# Register new server or update an existing server
 def register_server(guild, cursor, db):
     # Ensure the image folder exists, if not, create it
     if not os.path.exists(IMAGE_FOLDER):
@@ -153,16 +152,13 @@ def register_server(guild, cursor, db):
     # Register or update the members of the server
     register_members(guild, cursor, db)
 
-
-
-
-
-# Register or update members in the guild
 def register_members(guild, cursor, db):
     for member in guild.members:
         is_bot = 1 if member.bot else 0
         is_admin = 1 if member.guild_permissions.administrator else 0
-        account_created_at = member.created_at.strftime('%Y-%m-%d %H:%M:%S')  # Fecha de creación de la cuenta
+
+        # Full date and time format as timestamp (YYYY-MM-DD HH:MM:SS)
+        account_created_at = member.created_at.strftime('%Y-%m-%d %H:%M:%S')
 
         # Register or update user in user_profile (global data)
         cursor.execute("SELECT id FROM user_profile WHERE user_id = %s", (member.id,))
@@ -206,6 +202,9 @@ def register_members(guild, cursor, db):
 
         db.commit()
         register_user_roles(guild.id, member, cursor, db)
+
+
+
 
 
 
@@ -428,10 +427,6 @@ def update_server_icon(guild, cursor, db):
 
         except Exception as e:
             print(f"Error downloading or saving the new icon: {e}")
-
-
-
-
 
 @bot.event
 async def on_guild_remove(guild):
