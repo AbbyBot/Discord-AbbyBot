@@ -194,15 +194,22 @@ CREATE TABLE IF NOT EXISTS `user_profile` (
   `is_active` TINYINT NOT NULL DEFAULT 1,
   `user_privilege` INT NOT NULL DEFAULT 1,
   `account_created_at` DATETIME NOT NULL,
+  `theme_id` INT NOT NULL DEFAULT 1,  -- Abby-Theme default 1
   PRIMARY KEY (`id`),
   UNIQUE (`user_id`),
   CONSTRAINT `fk_user_privilege`
     FOREIGN KEY (`user_privilege`)
     REFERENCES `privileges` (`id`)
     ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_user_theme`
+    FOREIGN KEY (`theme_id`)
+    REFERENCES `AbbyBot_Themes` (`id`)
+    ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'Stores global user data like birthday and privileges.';
+COMMENT = 'Stores global user data like birthday, privileges, and selected theme.';
+
 
 -- -----------------------------------------------------
 -- Table `dashboard` (server-specific user data)
@@ -244,7 +251,28 @@ CREATE TABLE IF NOT EXISTS `user_roles` (
 ) ENGINE = InnoDB
 COMMENT = 'Stores user roles per server.';
 
--- Initial Data Inserts
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- Table `AbbyBot_Themes`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `AbbyBot_Themes`;
+
+CREATE TABLE IF NOT EXISTS `AbbyBot_Themes` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `title` VARCHAR(100) NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+COMMENT = 'Stores available themes for AbbyBot customization.';
+
+-- Insert initial themes
+INSERT INTO AbbyBot_Themes (id, title)
+VALUES
+(1, 'Abby-Theme'),
+
 INSERT INTO languages (id, language_code, language_name)
 VALUES
 (1, 'en', 'English'),
