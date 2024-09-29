@@ -83,8 +83,9 @@ def ensure_tables_exist(cursor):
 
 
 # Path of the folder where the images will be stored
-IMAGE_FOLDER = "images/guild_images"
+IMAGE_FOLDER = os.getenv('IMAGE_FOLDER_PATH')
 
+# Register new server or update an existing server
 # Register new server or update an existing server
 def register_server(guild, cursor, db):
     # Ensure the image folder exists, if not, create it
@@ -119,6 +120,10 @@ def register_server(guild, cursor, db):
                 # Save the image as a JPG file
                 img.save(image_path, "JPEG")
                 print(f"Image saved at: {image_path}")
+
+                # Save the relative URL to the database (so you can serve it later)
+                image_url = f"/images/guild_images/{image_filename}"
+
             except Exception as e:
                 print(f"Error downloading or saving the server's icon: {e}")
         
@@ -128,7 +133,7 @@ def register_server(guild, cursor, db):
             (guild_id, guild_name, owner_id, member_count, prefix, guild_language, guild_icon_url, guild_icon_last_updated) 
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """, 
-            (guild.id, guild.name, guild.owner.id, guild.member_count, 'abbybot_', default_language_id, image_path, datetime.now())
+            (guild.id, guild.name, guild.owner.id, guild.member_count, 'abbybot_', default_language_id, image_url, datetime.now())
         )
         print(f"Server {guild.name} registered.")
     else:
@@ -144,9 +149,10 @@ def register_server(guild, cursor, db):
     
     # Commit the changes to the database
     db.commit()
-    
+
     # Register or update the members of the server
     register_members(guild, cursor, db)
+
 
 
 
@@ -404,12 +410,13 @@ def update_server_icon(guild, cursor, db):
             print(f"New icon saved at: {image_path}")
 
             # Update the database with the new image path and timestamp
+            image_url = f"/images/guild_images/{image_filename}"
             cursor.execute("""
                 UPDATE server_settings 
                 SET guild_icon_url = %s, guild_icon_last_updated = %s
                 WHERE guild_id = %s
                 """, 
-                (image_path, datetime.now(), guild.id)
+                (image_url, datetime.now(), guild.id)
             )
             db.commit()
 

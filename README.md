@@ -35,17 +35,20 @@ AbbyBot is an application for Discord (BOT) designed by <a href="https://reyesan
 ## Installation (Development)
 
 AbbyBot is built with the use of global variables (dotenv), so you need to create an `.env` file before starting.
+- **Create a .env file:** Using a code or text editor you can create a `.env` file. It must contain the following content:
 
-- **Create a .env file:** Using a code or text editor you can create an .env file, it must contain the following content:
+| **Variable**       | **Description**                                                                 |
+|--------------------|---------------------------------------------------------------------------------|
+| `BOT_TOKEN`        | The token provided by Discord for your bot (keep this secret).                  |
+| `DB_HOST`          | The database host (e.g., `localhost`, without port).                            |
+| `DB_USER`          | Username for your database connection.                                          |
+| `DB_PASSWORD`      | Password for your database connection.                                          |
+| `DB_NAME`          | The name of the schema to be used by AbbyBot.                                   |
+| `EMOJIS`           | A list of Discord emojis used randomly by AbbyBot. Example: `<:emoji_name:id>`. |
+| `IMAGE_FOLDER_PATH`| The absolute path on your system where the bot will store images, such as server|
+|                    |  icons. Example: `/home/astronautmarkus/AbbyBotData/images/guild_images/`.      |
 
-| **Variable**   | **Description**                                                                 |
-|----------------|---------------------------------------------------------------------------------|
-| `BOT_TOKEN`    | The token provided by Discord for your bot (keep this secret).                  |
-| `DB_HOST`      | The database host (e.g., `localhost`, without port).                            |
-| `DB_USER`      | Username for your database connection.                                          |
-| `DB_PASSWORD`  | Password for your database connection.                                          |
-| `DB_NAME`      | The name of the schema to be used by AbbyBot.                                   |
-| `EMOJIS`       | A list of Discord emojis used randomly by AbbyBot. Example: `<:emoji_name:id>`  |
+
 
 - **Save the file:** You must save the .env file in `Python_Discord-AbbyBot` directory, between `Abby-bot.py`
 
