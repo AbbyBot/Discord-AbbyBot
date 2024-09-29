@@ -6,6 +6,10 @@ import mysql.connector
 import sys
 import schedule
 import time
+import requests
+from PIL import Image
+from io import BytesIO
+from datetime import datetime
 
 # Load dotenv variables
 load_dotenv()
@@ -77,22 +81,58 @@ def ensure_tables_exist(cursor):
         else:
             print(f"Table {table} already exists.")
 
+
+# Path of the folder where the images will be stored
+IMAGE_FOLDER = "images/guild_images"
+
 # Register new server or update an existing server
 def register_server(guild, cursor, db):
+    # Ensure the image folder exists, if not, create it
+    if not os.path.exists(IMAGE_FOLDER):
+        os.makedirs(IMAGE_FOLDER)
+
+    # Fetch default language ID (assuming 'en' is default)
     cursor.execute("SELECT id FROM languages WHERE language_code = %s", ('en',))
     default_language_id = cursor.fetchone()[0]
 
+    # Check if the server already exists in the database
     cursor.execute("SELECT guild_id FROM server_settings WHERE guild_id = %s", (guild.id,))
     if cursor.fetchone() is None:
+        # If the server is new, retrieve the icon URL
+        guild_icon_url = str(guild.icon.url) if guild.icon else None
+        image_path = None
+
+        if guild_icon_url:
+            try:
+                # Download the image from the server's icon URL
+                response = requests.get(guild_icon_url)
+                img = Image.open(BytesIO(response.content))
+
+                # Convert the image to JPG format
+                img = img.convert("RGB")
+
+                # Generate a unique filename using guild_id and current date
+                date_str = datetime.now().strftime('%Y%m%d%H%M%S')
+                image_filename = f"{guild.id}_{date_str}.jpg"
+                image_path = os.path.join(IMAGE_FOLDER, image_filename)
+
+                # Save the image as a JPG file
+                img.save(image_path, "JPEG")
+                print(f"Image saved at: {image_path}")
+            except Exception as e:
+                print(f"Error downloading or saving the server's icon: {e}")
+        
+        # Insert the new server's data into the database
         cursor.execute("""
             INSERT INTO server_settings 
-            (guild_id, guild_name, owner_id, member_count, prefix, guild_language) 
-            VALUES (%s, %s, %s, %s, %s, %s)
+            (guild_id, guild_name, owner_id, member_count, prefix, guild_language, guild_icon_url, guild_icon_last_updated) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """, 
-            (guild.id, guild.name, guild.owner.id, guild.member_count, 'abbybot_', default_language_id)
+            (guild.id, guild.name, guild.owner.id, guild.member_count, 'abbybot_', default_language_id, image_path, datetime.now())
         )
         print(f"Server {guild.name} registered.")
     else:
+        # If the server already exists, update its details
         cursor.execute("""
             UPDATE server_settings 
             SET guild_name = %s, owner_id = %s, member_count = %s 
@@ -102,8 +142,14 @@ def register_server(guild, cursor, db):
         )
         print(f"Server {guild.name} updated.")
     
+    # Commit the changes to the database
     db.commit()
+    
+    # Register or update the members of the server
     register_members(guild, cursor, db)
+
+
+
 
 # Register or update members in the guild
 def register_members(guild, cursor, db):
@@ -213,7 +259,23 @@ async def on_ready():
         cursor = db.cursor()
         ensure_tables_exist(cursor)
         
+        # Loop through all guilds that the bot is a member of
         for guild in bot.guilds:
+            # Fetch the stored icon URL from the database
+            cursor.execute("SELECT guild_icon_url FROM server_settings WHERE guild_id = %s", (guild.id,))
+            result = cursor.fetchone()
+
+            if result:
+                stored_icon_path = result[0]
+                guild_icon_url = str(guild.icon.url) if guild.icon else None
+
+                if guild_icon_url:
+                    # Compare the stored icon with the current icon
+                    if not stored_icon_path or not os.path.exists(stored_icon_path) or has_icon_changed(guild_icon_url, stored_icon_path):
+                        # Update the server icon if changed or the file does not exist
+                        update_server_icon(guild, cursor, db)
+
+            # Register the server and update user statuses
             register_server(guild, cursor, db)
             update_user_status(guild, cursor, db)
 
@@ -250,6 +312,7 @@ async def on_ready():
     except Exception as e:
         print(f"An error occurred while syncing commands: {e}")
 
+
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -279,6 +342,81 @@ async def on_message(message):
                 await message.channel.send(f"Prefix detected! The prefix for this server is: `{prefix}`")
                 await bot.process_commands(message)
 
+@bot.event
+async def on_guild_update(before, after):
+    # Check if the icon has changed
+    if before.icon != after.icon:
+        print(f"Icon changed for {after.name}")
+        
+        with get_db_connection() as db:
+            cursor = db.cursor()
+            
+            # Call a function to update the server icon
+            update_server_icon(after, cursor, db)
+
+# Function to check if the icon has changed by comparing current URL with the stored file
+def has_icon_changed(current_icon_url, stored_icon_path):
+    try:
+        # Download the current icon image
+        response = requests.get(current_icon_url)
+        current_icon = Image.open(BytesIO(response.content))
+
+        # Open the stored icon image
+        stored_icon = Image.open(stored_icon_path)
+
+        # Compare sizes as a simple check (you can expand this to pixel-by-pixel comparison)
+        if current_icon.size != stored_icon.size:
+            return True
+        
+        return False
+
+    except Exception as e:
+        print(f"Error comparing icons: {e}")
+        return True  # Assume icon has changed if there's an error
+
+
+# Function to update the server icon if it has changed
+def update_server_icon(guild, cursor, db):
+    # Ensure the image folder exists
+    if not os.path.exists(IMAGE_FOLDER):
+        os.makedirs(IMAGE_FOLDER)
+
+    # Get the new icon URL
+    guild_icon_url = str(guild.icon.url) if guild.icon else None
+    image_path = None
+
+    if guild_icon_url:
+        try:
+            # Download the new icon image
+            response = requests.get(guild_icon_url)
+            img = Image.open(BytesIO(response.content))
+
+            # Convert the image to JPG format
+            img = img.convert("RGB")
+
+            # Generate a unique filename using guild_id and current date
+            date_str = datetime.now().strftime('%Y%m%d%H%M%S')
+            image_filename = f"{guild.id}_{date_str}.jpg"
+            image_path = os.path.join(IMAGE_FOLDER, image_filename)
+
+            # Save the image
+            img.save(image_path, "JPEG")
+            print(f"New icon saved at: {image_path}")
+
+            # Update the database with the new image path and timestamp
+            cursor.execute("""
+                UPDATE server_settings 
+                SET guild_icon_url = %s, guild_icon_last_updated = %s
+                WHERE guild_id = %s
+                """, 
+                (image_path, datetime.now(), guild.id)
+            )
+            db.commit()
+
+        except Exception as e:
+            print(f"Error downloading or saving the new icon: {e}")
+
+
 
 
 @bot.event
@@ -297,6 +435,15 @@ async def on_guild_remove(guild):
             # Delete server-related `dashboard` logs
             cursor.execute("DELETE FROM dashboard WHERE guild_id = %s", (guild.id,))
             
+            # Fetch the current icon URL before deleting the server entry
+            cursor.execute("SELECT guild_icon_url FROM server_settings WHERE guild_id = %s", (guild.id,))
+            result = cursor.fetchone()
+            if result:
+                icon_path = result[0]
+                if os.path.exists(icon_path):
+                    os.remove(icon_path)  # Delete the server icon file
+                    print(f"Deleted server icon file at: {icon_path}")
+            
             # Finally, remove the server from the `server_settings` table
             cursor.execute("DELETE FROM server_settings WHERE guild_id = %s", (guild.id,))
             
@@ -306,6 +453,7 @@ async def on_guild_remove(guild):
         except Exception as e:
             db.rollback()  # Rollback if something fails
             print(f"Error deleting data for server '{guild.name}' (ID: {guild.id}): {e}")
+
 
 @bot.event
 async def on_guild_join(guild):
