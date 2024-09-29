@@ -121,8 +121,8 @@ def register_server(guild, cursor, db):
                 img.save(image_path, "JPEG")
                 print(f"Image saved at: {image_path}")
 
-                # Save the relative URL to the database (so you can serve it later)
-                image_url = f"/images/guild_images/{image_filename}"
+                # Solo almacena el nombre del archivo en la base de datos
+                image_url = image_filename
 
             except Exception as e:
                 print(f"Error downloading or saving the server's icon: {e}")
@@ -361,11 +361,14 @@ async def on_guild_update(before, after):
             update_server_icon(after, cursor, db)
 
 # Function to check if the icon has changed by comparing current URL with the stored file
-def has_icon_changed(current_icon_url, stored_icon_path):
+def has_icon_changed(current_icon_url, stored_icon_filename):
     try:
         # Download the current icon image
         response = requests.get(current_icon_url)
         current_icon = Image.open(BytesIO(response.content))
+
+        # Genera la ruta completa del archivo almacenado
+        stored_icon_path = os.path.join(IMAGE_FOLDER, stored_icon_filename)
 
         # Open the stored icon image
         stored_icon = Image.open(stored_icon_path)
@@ -379,6 +382,7 @@ def has_icon_changed(current_icon_url, stored_icon_path):
     except Exception as e:
         print(f"Error comparing icons: {e}")
         return True  # Assume icon has changed if there's an error
+
 
 
 # Function to update the server icon if it has changed
@@ -409,8 +413,8 @@ def update_server_icon(guild, cursor, db):
             img.save(image_path, "JPEG")
             print(f"New icon saved at: {image_path}")
 
-            # Update the database with the new image path and timestamp
-            image_url = f"/images/guild_images/{image_filename}"
+            # Only store the file name in the database
+            image_url = image_filename
             cursor.execute("""
                 UPDATE server_settings 
                 SET guild_icon_url = %s, guild_icon_last_updated = %s
@@ -422,6 +426,7 @@ def update_server_icon(guild, cursor, db):
 
         except Exception as e:
             print(f"Error downloading or saving the new icon: {e}")
+
 
 
 
