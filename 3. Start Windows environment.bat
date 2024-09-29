@@ -7,7 +7,7 @@ REM Activate virual environment
 call "%script_path%venv\Scripts\activate"
 
 REM Change bot directory
-cd "%script_path%Python_AbbyBot_Second_phase"
+cd "%script_path%Python_Discord-AbbyBot"
 
 REM Start discord bot
 python "AbbyBot.py" run
