@@ -193,6 +193,7 @@ CREATE TABLE IF NOT EXISTS `user_profile` (
   `user_birthday` DATE NULL DEFAULT NULL,
   `is_active` TINYINT NOT NULL DEFAULT 1,
   `user_privilege` INT NOT NULL DEFAULT 1,
+  `account_created_at` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE (`user_id`),
   CONSTRAINT `fk_user_privilege`
