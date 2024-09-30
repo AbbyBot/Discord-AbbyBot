@@ -193,7 +193,7 @@ CREATE TABLE IF NOT EXISTS `user_profile` (
   `user_birthday` DATE NULL DEFAULT NULL,
   `is_active` TINYINT NOT NULL DEFAULT 1,
   `user_privilege` INT NOT NULL DEFAULT 1,
-  `account_created_at` DATETIME NOT NULL,
+  `account_created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `theme_id` INT NOT NULL DEFAULT 1,  -- Abby-Theme default 1
   PRIMARY KEY (`id`),
   UNIQUE (`user_id`),

@@ -156,6 +156,9 @@ def register_members(guild, cursor, db):
         is_bot = 1 if member.bot else 0
         is_admin = 1 if member.guild_permissions.administrator else 0
 
+        # Get user created_at date
+        account_created_at = member.created_at
+
         # Register or update user in user_profile (global data)
         cursor.execute("SELECT id FROM user_profile WHERE user_id = %s", (member.id,))
         user_profile = cursor.fetchone()
@@ -164,10 +167,10 @@ def register_members(guild, cursor, db):
             # Insert new user into user_profile if not exists
             cursor.execute("""
                 INSERT INTO user_profile 
-                (user_id, user_username, user_privilege) 
-                VALUES (%s, %s, 1)
+                (user_id, user_username, account_created_at, user_privilege) 
+                VALUES (%s, %s, %s, 1)
                 """, 
-                (member.id, member.name)
+                (member.id, member.name, account_created_at)
             )
             db.commit()
 
@@ -198,6 +201,7 @@ def register_members(guild, cursor, db):
 
         db.commit()
         register_user_roles(guild.id, member, cursor, db)
+
 
 
 # Register or update user roles
