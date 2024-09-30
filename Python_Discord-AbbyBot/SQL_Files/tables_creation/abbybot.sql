@@ -220,6 +220,7 @@ CREATE TABLE IF NOT EXISTS `dashboard` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `guild_id` BIGINT NOT NULL,
   `user_profile_id` INT NOT NULL,  -- Links to user_profile
+  `user_server_nickname` VARCHAR(255) NOT NULL,
   `is_admin` TINYINT NOT NULL DEFAULT 0,
   `is_bot` TINYINT NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),

@@ -150,7 +150,6 @@ def register_server(guild, cursor, db):
     # Register or update the members of the server
     register_members(guild, cursor, db)
 
-# Register or update members in the guild
 def register_members(guild, cursor, db):
     for member in guild.members:
         is_bot = 1 if member.bot else 0
@@ -158,6 +157,9 @@ def register_members(guild, cursor, db):
 
         # Get user created_at date
         account_created_at = member.created_at
+
+        # Obtain the user's nickname on the server, if they do not have a nickname, use the username
+        user_server_nickname = member.nick if member.nick else member.name
 
         # Register or update user in user_profile (global data)
         cursor.execute("SELECT id FROM user_profile WHERE user_id = %s", (member.id,))
@@ -185,23 +187,22 @@ def register_members(guild, cursor, db):
         if cursor.fetchone() is None:
             cursor.execute("""
                 INSERT INTO dashboard 
-                (guild_id, user_profile_id, is_bot, is_admin) 
-                VALUES (%s, %s, %s, %s)
+                (guild_id, user_profile_id, is_bot, is_admin, user_server_nickname) 
+                VALUES (%s, %s, %s, %s, %s)
                 """, 
-                (guild.id, user_profile_id, is_bot, is_admin)
+                (guild.id, user_profile_id, is_bot, is_admin, user_server_nickname)
             )
         else:
             cursor.execute("""
                 UPDATE dashboard 
-                SET is_bot = %s, is_admin = %s 
+                SET is_bot = %s, is_admin = %s, user_server_nickname = %s
                 WHERE guild_id = %s AND user_profile_id = %s
                 """, 
-                (is_bot, is_admin, guild.id, user_profile_id)
+                (is_bot, is_admin, user_server_nickname, guild.id, user_profile_id)
             )
 
         db.commit()
         register_user_roles(guild.id, member, cursor, db)
-
 
 
 # Register or update user roles
@@ -248,7 +249,6 @@ def update_user_status(guild, cursor, db):
         """, (new_status, user_id))
 
     db.commit()
-
 
 
 # Discord bot setup
@@ -381,7 +381,6 @@ def has_icon_changed(current_icon_url, stored_icon_filename):
         return True  # Assume icon has changed if there's an error
 
 
-
 # Function to update the server icon if it has changed
 def update_server_icon(guild, cursor, db):
     if not os.path.exists(IMAGE_FOLDER):
@@ -408,9 +407,6 @@ def update_server_icon(guild, cursor, db):
             (image_filename, datetime.now(), guild.id)
         )
         db.commit()
-
-
-
 
 
 @bot.event
@@ -455,6 +451,29 @@ async def on_guild_join(guild):
         cursor = db.cursor()
         register_server(guild, cursor, db)
     print(f"Joined and registered new server: {guild.name}")
+
+@bot.event
+async def on_member_update(before, after):
+    # Check if the nickname has changed
+    if before.nick != after.nick:
+        guild_id = after.guild.id
+        user_id = after.id
+        new_nickname = after.nick if after.nick else after.name
+
+        with get_db_connection() as db:
+            cursor = db.cursor()
+
+            # update `user_server_nickname` field in dashboard `dashboard`
+            cursor.execute("""
+                UPDATE dashboard 
+                SET user_server_nickname = %s
+                WHERE guild_id = %s AND user_profile_id = (SELECT id FROM user_profile WHERE user_id = %s)
+                """, 
+                (new_nickname, guild_id, user_id)
+            )
+            db.commit()
+
+        print(f"User {after.name} changed nickname from {before.nick} to {new_nickname} in guild {after.guild.name}.")
 
 
 @bot.event
