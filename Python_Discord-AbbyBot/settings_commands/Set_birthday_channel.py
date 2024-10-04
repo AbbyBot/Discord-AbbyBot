@@ -29,7 +29,7 @@ class SetBirthDayChannel(commands.Cog):
         user_id = interaction.user.id
 
         # Check if the user is active (is_active = 1) or inactive (is_active = 0)
-        cursor.execute("SELECT is_active FROM dashboard WHERE guild_id = %s AND user_id = %s", (guild_id, user_id))
+        cursor.execute("SELECT is_active FROM user_profile WHERE user_id = %s;", (user_id,))
         result = cursor.fetchone()
 
         if result is None:
