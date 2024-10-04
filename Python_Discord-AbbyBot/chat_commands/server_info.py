@@ -4,7 +4,6 @@ from discord import app_commands
 import mysql.connector
 from dotenv import load_dotenv
 import os
-from embeds.embeds import account_inactive_embed
 
 # Load dotenv variables
 load_dotenv()
@@ -14,9 +13,9 @@ class ServerInfo(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="server_info", description="Check server info.")
-    async def help(self, interaction: discord.Interaction):
+    async def server_info(self, interaction: discord.Interaction):
 
-        # Connect to database with dotenv variables
+        # Connect to the database with dotenv variables
         db = mysql.connector.connect(
             host=os.getenv("DB_HOST"),
             user=os.getenv("DB_USER"),
@@ -25,110 +24,72 @@ class ServerInfo(commands.Cog):
         )
         cursor = db.cursor()
 
-        # Check if server is registered
+        # Get guild_id from the interaction
         guild_id = interaction.guild_id
-        cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
-        result = cursor.fetchone()
-        
-        if result is None:
-            # if server is not registered, send error message
-            await interaction.response.send_message("This server is not registered. Please contact the admin.", ephemeral=True)
-            cursor.close()
-            db.close()
-            return
-        
-        # Get guild_id and user_id from the interaction
-        guild_id = interaction.guild_id
-        user_id = interaction.user.id
 
-        # Check if the user is active (is_active = 1) or inactive (is_active = 0)
-        cursor.execute("SELECT is_active FROM user_profile WHERE user_id = %s;", (user_id,))
-        result = cursor.fetchone()
-
-        if result is None:
-            await interaction.response.send_message("User not found in the database.", ephemeral=True)
-            cursor.close()
-            db.close()
-            return
-
-        # If the user is inactive (is_active = 0), send an embed in DM and exit
-        is_active = result[0]
-        if is_active == 0:
-            try:
-                # Get the embed and file
-                embed, file = account_inactive_embed()
-
-                # Send the embed and the file as DM
-                await interaction.user.send(embed=embed, file=file)
-                
-                print(f"User {interaction.user} is inactive and notified.")
-            except discord.Forbidden:
-                print(f"Could not send DM to {interaction.user}. They may have DMs disabled.")
-
-            await interaction.response.send_message("Request Rejected: Your account has been listed as inactive in the AbbyBot system, please check your DM.", ephemeral=True)
-
-            cursor.close()
-            db.close()
-            return
-
-
-        server_data = """
-            SELECT s.guild_name, d.user_username, d.user_nickname, COUNT(d2.id) as member_count, l.language_code
+        # Fetch server information from database
+        server_data_query = """
+            SELECT s.guild_name, s.member_count, s.guild_language, p.user_username, d.user_server_nickname
             FROM server_settings s
-            JOIN dashboard d ON s.owner_id = d.user_id AND s.guild_id = d.guild_id -- Asegura que el nickname corresponde al servidor actual
-            JOIN dashboard d2 ON s.guild_id = d2.guild_id AND d2.is_active = 1
-            JOIN languages l ON s.guild_language = l.id
+            JOIN dashboard d ON s.guild_id = d.guild_id
+            JOIN user_profile p ON d.user_profile_id = p.id
             WHERE s.guild_id = %s
-            GROUP BY s.guild_name, d.user_username, d.user_nickname, l.language_code;
+            AND s.owner_id = p.user_id;
+
         """
-
-
-        cursor.execute(server_data, (guild_id,))
-        result_data = cursor.fetchall()
-
+        cursor.execute(server_data_query, (guild_id,))
+        result_data = cursor.fetchone()
 
         if result_data:
-            result_data = result_data[0]  # Use the first row (if you're expecting only one)
-            guild_name = result_data[0]  # First column from the query
-            owner_username = result_data[1]  # Second column from the query
-            owner_nickname = result_data[2]  # Third column from the query
-            member_count = result_data[3]  # Fourth column from the query
-            language_code = result_data[4]  # Fifth column from the query
+            guild_name = result_data[0]
+            member_count = result_data[1]
+            guild_language = result_data[2]
+            owner_username = result_data[3]
+            owner_nickname = result_data[4]
+        else:
+            await interaction.response.send_message("Could not retrieve server information.", ephemeral=True)
+            cursor.close()
+            db.close()
+            return
 
+        # Fetch the server icon using Discord.py
+        guild = interaction.guild
+        guild_icon_url = guild.icon.url if guild.icon else None
 
-        # Get server language
-        language_id = result[0]  # Get language ID
+        # Language handling for embeds
+        if guild_language == 1:  # English
+            embed = discord.Embed(
+                title=f"Server Information for {guild_name}",
+                description=f"Here are some details for the server **{guild_name}**:",
+                color=discord.Color.orange()
+            )
+            embed.add_field(name="Owner Username", value=owner_username, inline=True)
+            embed.add_field(name="Owner Nickname", value=owner_nickname, inline=True)
+            embed.add_field(name="Member Count", value=member_count, inline=True)
+            embed.add_field(name="Language", value="English", inline=True)
 
-        if language_id == 1:
-            description_title = 'Server info'
-            description_text = f"Here is some data from the server {guild_name}"
-        elif language_id == 2:
-            description_title = 'Información del servidor'
-            description_text = f"Aquí tiene algunos datos sobre el servidor {guild_name}"
+        elif guild_language == 2:  # Spanish
+            embed = discord.Embed(
+                title=f"Información del Servidor {guild_name}",
+                description=f"Aquí están algunos detalles del servidor **{guild_name}**:",
+                color=discord.Color.orange()
+            )
+            embed.add_field(name="Nombre de Usuario del Propietario", value=owner_username, inline=True)
+            embed.add_field(name="Apodo del Propietario", value=owner_nickname, inline=True)
+            embed.add_field(name="Cantidad de Miembros", value=member_count, inline=True)
+            embed.add_field(name="Idioma", value="Español", inline=True)
 
+        # Add server icon if available
+        if guild_icon_url:
+            embed.set_thumbnail(url=guild_icon_url)
 
-        # Create embed
-        embed = discord.Embed(
-            title=description_title,
-            description=description_text,
-            color=discord.Color.from_rgb(145, 61, 33)  # Abbybot's color
-        )
-
-        # Create a embed with result_data variables
-
-        embed.add_field(name="Server Name" if language_id == 1 else "Nombre del servidor", value=guild_name, inline=False)
-        embed.add_field(name="Owner Username" if language_id == 1 else "Nombre de usuario del propietario", value=owner_username, inline=False)
-        embed.add_field(name="Owner Nickname" if language_id == 1 else "Apodo del propietario", value=owner_nickname, inline=False)
-        embed.add_field(name="Member Count" if language_id == 1 else "Cantidad de miembros", value=member_count, inline=False)
-        embed.add_field(name="Language Code" if language_id == 1 else "Código de lenguaje", value=language_code, inline=False)
-
-
+        # Send the embed
         await interaction.response.send_message(embed=embed)
 
-        # Close db connection
+        # Close the database connection
         cursor.close()
         db.close()
 
-# Add cog command
+# Add the cog to the bot
 async def setup(bot):
     await bot.add_cog(ServerInfo(bot))
