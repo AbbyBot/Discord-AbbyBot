@@ -56,9 +56,9 @@ class SetBirthday(commands.GroupCog, group_name="birthday"):
 
             # Send response based on the language setting
             if language_id == 1:
-                await interaction.response.send_message(f"Your birthday has been set to {user_birthday_date.strftime('%B %d, %Y')}. AbbyBot will greet you on this server or by DM!", ephemeral=True)
+                await interaction.response.send_message(f"Your birthday has been set to {user_birthday_date.strftime('%B %d, %Y')}. AbbyBot will greet you on this server or anywhere else where you are with me!", ephemeral=True)
             else:
-                await interaction.response.send_message(f"Tu fecha de cumpleaños ha sido asignada el {user_birthday_date.strftime('%d de %B de %Y')}. ¡AbbyBot te saludará en este servidor o por DM!", ephemeral=True)
+                await interaction.response.send_message(f"Tu fecha de cumpleaños ha sido asignada el {user_birthday_date.strftime('%d de %B de %Y')}. ¡AbbyBot te saludará en este servidor o en cualquier otro donde estés junto a mi!", ephemeral=True)
 
         except ValueError as e:
             # If the values do not form a valid date

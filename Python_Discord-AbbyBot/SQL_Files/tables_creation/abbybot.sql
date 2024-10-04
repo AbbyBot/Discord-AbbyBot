@@ -223,6 +223,7 @@ CREATE TABLE IF NOT EXISTS `dashboard` (
   `user_server_nickname` VARCHAR(255) NOT NULL,
   `is_admin` TINYINT NOT NULL DEFAULT 0,
   `is_bot` TINYINT NOT NULL DEFAULT 0,
+  `last_birthday_announcement` DATE NULL DEFAULT NULL,  -- Stores the last birthday announcement date
   PRIMARY KEY (`id`),
   INDEX `fk_guild_userid_idx` (`guild_id` ASC),
   FOREIGN KEY (`user_profile_id`) REFERENCES `user_profile` (`id`),
@@ -230,9 +231,11 @@ CREATE TABLE IF NOT EXISTS `dashboard` (
     FOREIGN KEY (`guild_id`)
     REFERENCES `server_settings` (`guild_id`)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON UPDATE NO ACTION
+)
 ENGINE = InnoDB
-COMMENT = 'Stores server-specific user data, like admin status.';
+COMMENT = 'Stores server-specific user data, like admin status and last birthday announcement.';
+
 
 -- -----------------------------------------------------
 -- Table `user_roles` (server-specific user roles)
