@@ -35,7 +35,6 @@ from chat_commands.User_info import UserInfo
 
 # Settings commands import
 from settings_commands.Set_language import SetLanguage
-from settings_commands.Events_control import EventsControl
 from settings_commands.set_prefix import SetPrefix
 from settings_commands.Set_birthday import SetBirthday
 from settings_commands.Set_birthday_channel import SetBirthDayChannel
@@ -46,6 +45,8 @@ from event_codes.Deleted_messages import Deleted_Messages
 from event_codes.Abby_mentions import Abby_mentions
 from event_codes.birthday_events import BirthdayEvent
 
+# Control commands import
+from settings_commands.control_commands import ControlGroup
 
 # Event Roles
 
@@ -304,7 +305,11 @@ async def on_ready():
     await bot.add_cog(Help(bot))
     await bot.add_cog(SetLanguage(bot))
     await bot.add_cog(TellHistory(bot))
-    await bot.add_cog(EventsControl(bot))
+
+
+    await bot.add_cog(ControlGroup(bot))
+
+    
     await bot.add_cog(Blackjack(bot))
     await bot.add_cog(WaifuImg(bot))
     await bot.add_cog(CatImg(bot))
