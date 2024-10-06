@@ -46,6 +46,13 @@ from event_codes.Deleted_messages import Deleted_Messages
 from event_codes.Abby_mentions import Abby_mentions
 from event_codes.birthday_events import BirthdayEvent
 
+
+# Event Roles
+
+from event_codes.roles.on_guild_role_create import RoleCreateEvent
+from event_codes.roles.on_guild_role_delete import RoleDeleteEvent
+from event_codes.roles.on_guild_role_update import RoleUpdateEvent
+
 # Minigames import
 from minigames.blackjack import Blackjack
 from minigames.RockPaperScissors import RockPaperScissors
@@ -310,6 +317,13 @@ async def on_ready():
     await bot.add_cog(SetBirthDayChannel(bot))
     await bot.add_cog(SetLogsChannel(bot))
     await bot.add_cog(BirthdayEvent(bot))
+
+
+    # Events
+    await bot.add_cog(RoleCreateEvent(bot))
+    await bot.add_cog(RoleDeleteEvent(bot))
+    await bot.add_cog(RoleUpdateEvent(bot))
+
 
     try:
         synced_commands = await bot.tree.sync()
