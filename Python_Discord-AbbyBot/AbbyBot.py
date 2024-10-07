@@ -58,11 +58,7 @@ from minigames.minigames_commands import Minigames_commands
 
 
 # APIs commands import
-from api_commands.waifu_img import WaifuImg
-from api_commands.cat_img import CatImg
-from api_commands.neko_img import NekoImg
-from api_commands.dog_img import DogImg
-
+from api_commands.image_commands import ImageCommands
 # Establish MySQL connection
 def get_db_connection():
     return mysql.connector.connect(**db_config)
@@ -292,7 +288,7 @@ async def on_ready():
 
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.watching, 
-        name="www.abbybot.cl"
+        name="www.abbybotproject.com"
     ))
 
     # Load all commands (cogs)
@@ -309,10 +305,7 @@ async def on_ready():
 
     
     await bot.add_cog(Minigames_commands(bot))
-    await bot.add_cog(WaifuImg(bot))
-    await bot.add_cog(CatImg(bot))
-    await bot.add_cog(NekoImg(bot))
-    await bot.add_cog(DogImg(bot))
+    await bot.add_cog(ImageCommands(bot))
     await bot.add_cog(ServerCommands(bot))
     await bot.add_cog(UserCommands(bot))
 
@@ -485,7 +478,7 @@ async def on_member_update(before, after):
     with get_db_connection() as db:
         cursor = db.cursor()
 
-        # Si hay roles añadidos
+        # If there are added roles
         for role in added_roles:
             if not role.is_default():  # Ignore the default "Everyone" role
                 cursor.execute("""
