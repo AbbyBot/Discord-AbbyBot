@@ -28,7 +28,7 @@ db_config = {
 # Chat commands import
 from chat_commands.ping import Ping
 from chat_commands.code import Code
-from chat_commands.Help import Help
+from chat_commands.help import Help
 from chat_commands.tell_history import TellHistory
 from chat_commands.server_commands import ServerCommands
 
