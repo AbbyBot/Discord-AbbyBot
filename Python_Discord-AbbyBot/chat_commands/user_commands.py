@@ -5,6 +5,7 @@ import mysql.connector
 from dotenv import load_dotenv
 import os
 from embeds.embeds import account_inactive_embed  # import embed system
+from utils.utils import get_bot_avatar
 
 # Load dotenv variables
 load_dotenv()
@@ -64,9 +65,6 @@ class UserCommands(commands.GroupCog, name="user"):
 
         bot_id = 1028065784016142398  # AbbyBot ID
 
-        async def get_bot_avatar():
-            bot_user = await self.bot.fetch_user(bot_id)
-            return bot_user.display_avatar.url
 
         guild_id = interaction.guild_id
 
@@ -190,7 +188,7 @@ class UserCommands(commands.GroupCog, name="user"):
             embed.add_field(name="Es Bot?", value=is_bot, inline=True)
             embed.add_field(name="Roles", value=roles, inline=True)
 
-        bot_avatar_url = await get_bot_avatar()
+        bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
 
         embed.set_footer(
             text="AbbyBot",  

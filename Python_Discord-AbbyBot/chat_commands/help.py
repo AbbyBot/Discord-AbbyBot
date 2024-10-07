@@ -6,6 +6,11 @@ from dotenv import load_dotenv
 import os
 from embeds.embeds import account_inactive_embed
 
+from utils.utils import get_bot_avatar 
+
+
+
+
 # Load dotenv variables
 load_dotenv()
 
@@ -120,6 +125,16 @@ class Help(commands.Cog):
 
         # Add img to embed
         embed.set_image(url="attachment://abbybot.png")
+
+        bot_id = 1028065784016142398  # AbbyBot ID
+
+
+        bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
+
+        embed.set_footer(
+            text="AbbyBot",  
+            icon_url=bot_avatar_url  
+        )
 
         # Send message and image
         await interaction.response.send_message(embed=embed, file=file)
