@@ -40,18 +40,18 @@ from chat_commands.user_commands import UserCommands
 from settings_commands.set_commands import SetCommands
 
 # Events import
-from event_codes.Deleted_messages import Deleted_Messages
-from event_codes.Abby_mentions import Abby_mentions
-from event_codes.birthday_events import BirthdayEvent
+from event_commands.Deleted_messages import Deleted_Messages
+from event_commands.Abby_mentions import Abby_mentions
+from event_commands.birthday_events import BirthdayEvent
 
 # Control commands import
 from settings_commands.control_commands import ControlGroup
 
 # Event Roles
 
-from event_codes.roles.on_guild_role_create import RoleCreateEvent
-from event_codes.roles.on_guild_role_delete import RoleDeleteEvent
-from event_codes.roles.on_guild_role_update import RoleUpdateEvent
+from event_commands.roles.on_guild_role_create import RoleCreateEvent
+from event_commands.roles.on_guild_role_delete import RoleDeleteEvent
+from event_commands.roles.on_guild_role_update import RoleUpdateEvent
 
 # Minigames import
 from minigames.minigames_commands import Minigames_commands
