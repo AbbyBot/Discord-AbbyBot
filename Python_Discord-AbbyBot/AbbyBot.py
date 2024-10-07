@@ -294,7 +294,7 @@ async def on_ready():
 
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.watching, 
-        name="www.abbybotproject.com"
+        name="abbybotproject.com"
     ))
 
     # Load all commands (cogs)

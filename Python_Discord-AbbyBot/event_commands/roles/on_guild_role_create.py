@@ -3,6 +3,8 @@ from discord.ext import commands
 import mysql.connector
 from dotenv import load_dotenv
 import os
+from utils.utils import get_bot_avatar
+from datetime import datetime
 
 # Cargar variables dotenv
 load_dotenv()
@@ -26,7 +28,7 @@ class RoleCreateEvent(commands.Cog):
         guild_id = role.guild.id
 
         # Check if the server has activated_logs = 1
-        cursor.execute("select activated_logs from server_settings where guild_id = %s", (guild_id,))
+        cursor.execute("SELECT activated_logs FROM server_settings WHERE guild_id = %s", (guild_id,))
         logs_result = cursor.fetchone()
 
         if logs_result is None or logs_result[0] == 0:
@@ -34,7 +36,6 @@ class RoleCreateEvent(commands.Cog):
             cursor.close()
             db.close()
             return
-
 
         # Check server language
         cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
@@ -46,25 +47,57 @@ class RoleCreateEvent(commands.Cog):
             db.close()
             return
 
-        # Check language
+        # Create an embed message
         language_id = result[0]
+
+        bot_id = 1028065784016142398  # AbbyBot ID
+
+        bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
+
         if language_id == 1:
-            response_message = f"A new role named **{role.name}** has been created in this server."
+            now = datetime.now()
+            english_datetime = now.strftime("%m/%d/%Y %H:%M:%S")
+            embed = discord.Embed(
+                title="Role Created",
+                description=f"A new role named has been created in this server.",
+                color=discord.Color.green()
+            )
+            embed.set_thumbnail(url=bot_avatar_url)
+            embed.add_field(name="Date and time", value=english_datetime, inline=True)
+            embed.add_field(name="Role name", value=f"{role.name}", inline=True)
+            embed.set_footer(
+            text="AbbyBot",  
+            icon_url=bot_avatar_url  
+            )
+
         elif language_id == 2:
-            response_message = f"Se ha creado un nuevo rol llamado **{role.name}** en este servidor."
+            now = datetime.now()
+            spanish_datetime = now.strftime("%d/%m/%Y %H:%M:%S")
+            embed = discord.Embed(
+                title="Rol Creado",
+                description=f"Se ha creado un nuevo rol llamado {role.name} en este servidor.",
+                color=discord.Color.green()
+            )
+
+            embed.set_thumbnail(url=bot_avatar_url)
+            embed.add_field(name="Fecha y hora", value=spanish_datetime, inline=True)
+            embed.add_field(name="Nombre del rol", value=f"{role.name}", inline=True)
+            embed.set_footer(
+            text="AbbyBot",  
+            icon_url=bot_avatar_url  
+            )
 
         # Get logs_channel ID
-        cursor.execute("select logs_channel from server_settings where guild_id = %s", (guild_id,))
+        cursor.execute("SELECT logs_channel FROM server_settings WHERE guild_id = %s", (guild_id,))
         default_channel = cursor.fetchone()
 
         if default_channel is not None and default_channel[0] is not None:
             logs_channel = self.bot.get_channel(default_channel[0])  # Get the TextChannel object
 
             if logs_channel is not None:
-                await logs_channel.send(response_message)
+                await logs_channel.send(embed=embed)
 
-
-        # Close bd
+        # Close db connection
         cursor.close()
         db.close()
 

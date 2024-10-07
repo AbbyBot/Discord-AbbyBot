@@ -3,6 +3,8 @@ from discord.ext import commands
 import mysql.connector
 from dotenv import load_dotenv
 import os
+from utils.utils import get_bot_avatar
+from datetime import datetime
 
 # Cargar variables dotenv
 load_dotenv()
@@ -50,12 +52,45 @@ class RoleDeleteEvent(commands.Cog):
             if entry.target.id == role.id:  # Check if the deleted role matches
                 user = entry.user  # The user who deleted the role
 
-        # Check language and create response message
+        # Create embed message
         language_id = result[0]
+
+        bot_id = 1028065784016142398  # AbbyBot ID
+
+        bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
+
         if language_id == 1:
-            response_message = f"The role **{role.name}** has been deleted by **{user.name}**."
+            now = datetime.now()
+            english_datetime = now.strftime("%m/%d/%Y %H:%M:%S")
+            embed = discord.Embed(
+                title="Role Deleted",
+                description=f"A role named has been deleted in this server.",
+                color=discord.Color.green()
+            )
+            embed.set_thumbnail(url=bot_avatar_url)
+            embed.add_field(name="Date and time", value=english_datetime, inline=True)
+            embed.add_field(name="Role name", value=f"{role.name}", inline=True)
+            embed.set_footer(
+            text="AbbyBot",  
+            icon_url=bot_avatar_url  
+            )
+
+
         elif language_id == 2:
-            response_message = f"El rol **{role.name}** ha sido eliminado por **{user.name}**."
+            now = datetime.now()
+            spanish_datetime = now.strftime("%d/%m/%Y %H:%M:%S")
+            embed = discord.Embed(
+                title="Rol Eliminado",
+                description=f"Se ha eliminado un rol llamado {role.name} en este servidor.",
+                color=discord.Color.green()
+            )
+            embed.set_thumbnail(url=bot_avatar_url)
+            embed.add_field(name="Fecha y hora", value=spanish_datetime, inline=True)
+            embed.add_field(name="Nombre del rol", value=f"{role.name}", inline=True)
+            embed.set_footer(
+            text="AbbyBot",  
+            icon_url=bot_avatar_url  
+            )
 
         # Get logs_channel ID
         cursor.execute("SELECT logs_channel FROM server_settings WHERE guild_id = %s", (guild_id,))
@@ -65,7 +100,7 @@ class RoleDeleteEvent(commands.Cog):
             logs_channel = self.bot.get_channel(default_channel[0])  # Get the TextChannel object
 
             if logs_channel is not None:
-                await logs_channel.send(response_message)
+               await logs_channel.send(embed=embed)
 
         # Close bd
         cursor.close()
