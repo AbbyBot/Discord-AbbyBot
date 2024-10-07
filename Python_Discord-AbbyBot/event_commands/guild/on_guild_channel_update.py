@@ -4,7 +4,7 @@ import mysql.connector
 from dotenv import load_dotenv
 import os
 
-# Cargar variables dotenv
+# Load dotenv variables
 load_dotenv()
 
 class ChannelUpdateEvent(commands.Cog):
