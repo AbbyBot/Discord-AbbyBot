@@ -34,11 +34,13 @@ from chat_commands.server_info import ServerInfo
 from chat_commands.User_info import UserInfo
 
 # Settings commands import
-from settings_commands.Set_language import SetLanguage
-from settings_commands.set_prefix import SetPrefix
-from settings_commands.Set_birthday import SetBirthday
-from settings_commands.Set_birthday_channel import SetBirthDayChannel
-from settings_commands.Set_logs_channel import SetLogsChannel
+# from settings_commands.Set_language import SetLanguage
+# from settings_commands.set_prefix import SetPrefix
+# from settings_commands.Set_birthday import SetBirthday
+# from settings_commands.Set_birthday_channel import SetBirthDayChannel
+# from settings_commands.Set_logs_channel import SetLogsChannel
+
+from settings_commands.set_commands import SetCommands
 
 # Events import
 from event_codes.Deleted_messages import Deleted_Messages
@@ -303,10 +305,10 @@ async def on_ready():
     await bot.add_cog(Deleted_Messages(bot))
     await bot.add_cog(Abby_mentions(bot))
     await bot.add_cog(Help(bot))
-    await bot.add_cog(SetLanguage(bot))
+
     await bot.add_cog(TellHistory(bot))
 
-
+    await bot.add_cog(SetCommands(bot))
     await bot.add_cog(ControlGroup(bot))
 
     
@@ -315,12 +317,10 @@ async def on_ready():
     await bot.add_cog(CatImg(bot))
     await bot.add_cog(NekoImg(bot))
     await bot.add_cog(DogImg(bot))
-    await bot.add_cog(SetPrefix(bot))
     await bot.add_cog(ServerInfo(bot))
     await bot.add_cog(UserInfo(bot))
-    await bot.add_cog(SetBirthday(bot))
-    await bot.add_cog(SetBirthDayChannel(bot))
-    await bot.add_cog(SetLogsChannel(bot))
+
+
     await bot.add_cog(BirthdayEvent(bot))
 
 
