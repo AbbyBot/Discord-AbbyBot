@@ -40,7 +40,7 @@ from chat_commands.user_commands import UserCommands
 from settings_commands.set_commands import SetCommands
 
 # Events import
-from event_commands.Deleted_messages import Deleted_Messages
+from event_commands.deleted_messages import Deleted_Messages
 from event_commands.Abby_mentions import Abby_mentions
 from event_commands.birthday_events import BirthdayEvent
 

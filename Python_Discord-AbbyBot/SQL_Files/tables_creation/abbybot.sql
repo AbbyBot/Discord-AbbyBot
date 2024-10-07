@@ -293,6 +293,8 @@ VALUES
 (1, 'normal'),
 (2, 'angry'),
 (3, 'forgive');
+(4, 'delete');
+
 
 INSERT INTO privileges (id, privilege_name, value)
 VALUES

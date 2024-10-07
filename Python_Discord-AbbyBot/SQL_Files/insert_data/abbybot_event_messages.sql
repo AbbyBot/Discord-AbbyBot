@@ -1,5 +1,5 @@
 -- Normal english event messages
-INSERT INTO abbybot.event_message (type_id, language_id, message)
+INSERT INTO event_message (type_id, language_id, message)
 VALUES
 (1, 1, 'Hey {user_mention}, did you call me?'),
 (1, 1, 'Hello {user_mention}, how can I help you?'),
@@ -20,7 +20,7 @@ VALUES
 ;
 
 -- Normal spanish event messages
-INSERT INTO abbybot.event_message (type_id, language_id, message)
+INSERT INTO event_message (type_id, language_id, message)
 VALUES
 (1, 2, 'Hola {user_mention}, ¿me llamaste?'),
 (1, 2, 'Hola {user_mention}, ¿en qué puedo ayudarte?'),
@@ -42,7 +42,7 @@ VALUES
 
 -- Angry english event messages
 
-INSERT INTO abbybot.event_message (type_id, language_id, message)
+INSERT INTO event_message (type_id, language_id, message)
 VALUES
 (2, 1, 'What now, {user_mention}?'),
 (2, 1, 'You again, {user_mention}? What do you want?'),
@@ -64,7 +64,7 @@ VALUES
 
 -- Angry spanish event messages
 
-INSERT INTO abbybot.event_message (type_id, language_id, message)
+INSERT INTO event_message (type_id, language_id, message)
 VALUES
 (2, 2, '¿Ahora qué, {user_mention}?'),
 (2, 2, '¿Otra vez tú, {user_mention}? ¿Qué quieres?'),
@@ -86,7 +86,7 @@ VALUES
 
 -- Forgive english event messages
 
-INSERT INTO abbybot.event_message (type_id, language_id, message)
+INSERT INTO event_message (type_id, language_id, message)
 VALUES
 (3, 1, 'It''s okay, {user_mention}. I forgive you.'),
 (3, 1, 'Don’t worry about it, {user_mention}. We''re fine.'),
@@ -108,7 +108,7 @@ VALUES
 
 -- Forgive spanish event messages
 
-INSERT INTO abbybot.event_message (type_id, language_id, message)
+INSERT INTO event_message (type_id, language_id, message)
 VALUES
 (3, 2, 'Está bien, {user_mention}. Te perdono.'),
 (3, 2, 'No te preocupes, {user_mention}. Estamos bien.'),
@@ -126,5 +126,37 @@ VALUES
 (3, 2, 'Vamos a dejarlo atrás. He pasado por cosas peores.'),
 (3, 2, 'No puedo estar enfadada para siempre. Lo superaremos.'),
 (3, 2, 'He lidiado con cosas peores que esto. Estás perdonado.')
+;
+
+-- Delete spanish event messages
+
+INSERT INTO event_message (type_id, language_id, message)
+VALUES
+(4, 2, '¿Crees que nadie lo notará, {user_mention}? Ya vi lo que borraste.'),
+(4, 2, 'Ese mensaje que borraste... no me pasó desapercibido.'),
+(4, 2, 'Lo borraste, {user_mention}, pero no tan rápido como para que no lo viera.'),
+(4, 2, 'Sabes, {user_mention}, los secretos no duran mucho. Yo ya lo vi.'),
+(4, 2, 'Si querías ocultar algo, {user_mention}, llegaste tarde. Ya lo vi.'),
+(4, 2, '¿Borrando rastros, {user_mention}? No tan rápido.'),
+(4, 2, 'No te preocupes, todos cometemos errores... incluso los que borramos.'),
+(4, 2, 'Lo que fue dicho, {user_mention}, no puede ser desdicho. Bueno, casi.'),
+(4, 2, 'Ya viste algo que no debías, ¿verdad, {user_mention}?'),
+(4, 2, 'Eliminar un mensaje no siempre lo hace desaparecer de la memoria, {user_mention}.')
+;
+
+-- Delete english event messages
+
+INSERT INTO event_message (type_id, language_id, message)
+VALUES
+(4, 1, 'You think no one noticed, {user_mention}? I saw what you deleted.'),
+(4, 1, 'That message you deleted... didn’t go unnoticed.'),
+(4, 1, 'You deleted it, {user_mention}, but not fast enough for me to miss it.'),
+(4, 1, 'Secrets don’t last long, {user_mention}. I already saw it.'),
+(4, 1, 'Trying to hide something, {user_mention}? Too late, I already saw it.'),
+(4, 1, 'Cleaning up your tracks, {user_mention}? Not fast enough.'),
+(4, 1, 'Don’t worry, everyone makes mistakes... even the ones they delete.'),
+(4, 1, 'What was said can’t always be unsaid, {user_mention}. Well, almost.'),
+(4, 1, 'Caught a glimpse of something you shouldn’t have, didn’t you, {user_mention}?'),
+(4, 1, 'Deleting a message doesn’t always make it disappear from memory, {user_mention}.')
 ;
 
