@@ -472,26 +472,42 @@ async def on_guild_join(guild):
 
 @bot.event
 async def on_member_update(before, after):
-    # Check if the nickname has changed
-    if before.nick != after.nick:
-        guild_id = after.guild.id
-        user_id = after.id
-        new_nickname = after.nick if after.nick else after.name
+    guild_id = after.guild.id
+    user_id = after.id
 
-        with get_db_connection() as db:
-            cursor = db.cursor()
+    # Get the roles before and after the change
+    before_roles = set(before.roles)
+    after_roles = set(after.roles)
 
-            # update `user_server_nickname` field in dashboard `dashboard`
-            cursor.execute("""
-                UPDATE dashboard 
-                SET user_server_nickname = %s
-                WHERE guild_id = %s AND user_profile_id = (SELECT id FROM user_profile WHERE user_id = %s)
-                """, 
-                (new_nickname, guild_id, user_id)
-            )
-            db.commit()
+    # Compare previous roles with new ones
+    added_roles = after_roles - before_roles
+    removed_roles = before_roles - after_roles
 
-        print(f"User {after.name} changed nickname from {before.nick} to {new_nickname} in guild {after.guild.name}.")
+    with get_db_connection() as db:
+        cursor = db.cursor()
+
+        # Si hay roles añadidos
+        for role in added_roles:
+            if not role.is_default():  # Ignore the default "Everyone" role
+                cursor.execute("""
+                    INSERT INTO user_roles (guild_id, user_profile_id, role_id, role_name) 
+                    VALUES (%s, (SELECT id FROM user_profile WHERE user_id = %s), %s, %s)
+                    """, 
+                    (guild_id, user_id, role.id, role.name)
+                )
+                db.commit()
+
+        # If there are deleted roles
+        for role in removed_roles:
+            if not role.is_default():  # Ignore the default "Everyone" role
+                cursor.execute("""
+                    DELETE FROM user_roles 
+                    WHERE guild_id = %s AND user_profile_id = (SELECT id FROM user_profile WHERE user_id = %s) AND role_id = %s
+                    """, 
+                    (guild_id, user_id, role.id)
+                )
+                db.commit()
+
 
 
 @bot.event
