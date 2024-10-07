@@ -4,6 +4,7 @@ from discord import app_commands
 import mysql.connector
 from dotenv import load_dotenv
 import os
+from utils.utils import get_bot_avatar
 
 # Load dotenv variables
 load_dotenv()
@@ -27,13 +28,8 @@ class ServerCommands(commands.GroupCog, name="server"):
         # Get guild_id from the interaction
         guild_id = interaction.guild_id
 
-
         bot_id = 1028065784016142398  # AbbyBot ID
 
-        async def get_bot_avatar():
-            bot_user = await self.bot.fetch_user(bot_id)
-            bot_avatar_url = bot_user.display_avatar.url
-            return bot_avatar_url
 
         # Fetch server information from database
         server_data_query = """
@@ -91,13 +87,11 @@ class ServerCommands(commands.GroupCog, name="server"):
         if guild_icon_url:
             embed.set_thumbnail(url=guild_icon_url)
 
-        
-        bot_avatar_url = await get_bot_avatar()
 
-        embed.set_footer(
-            text="AbbyBot",  
-            icon_url=bot_avatar_url  
-        )
+        bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
+        
+        embed.set_footer(text="AbbyBot", icon_url=bot_avatar_url)
+
 
         # Send the embed
         await interaction.response.send_message(embed=embed)

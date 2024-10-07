@@ -4,6 +4,8 @@ from discord import app_commands
 import mysql.connector
 from dotenv import load_dotenv
 import os
+from utils.utils import get_bot_avatar
+bot_id = 1028065784016142398  # AbbyBot ID
 
 # Load dotenv variables
 load_dotenv()
@@ -139,12 +141,9 @@ class UserInfo(commands.Cog):
             embed.add_field(name="Es Bot?", value=is_bot, inline=True)
             embed.add_field(name="Roles", value=roles, inline=True)
 
-        bot_avatar_url = await get_bot_avatar()
-
-        embed.set_footer(
-            text="AbbyBot",  
-            icon_url=bot_avatar_url  
-        )
+        bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
+        
+        embed.set_footer(text="AbbyBot", icon_url=bot_avatar_url)
 
         await interaction.response.send_message(embed=embed)
 

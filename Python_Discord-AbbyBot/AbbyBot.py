@@ -54,8 +54,8 @@ from event_codes.roles.on_guild_role_delete import RoleDeleteEvent
 from event_codes.roles.on_guild_role_update import RoleUpdateEvent
 
 # Minigames import
-from minigames.blackjack import Blackjack
-from minigames.RockPaperScissors import RockPaperScissors
+from minigames.minigames_commands import Minigames_commands
+
 
 # APIs commands import
 from api_commands.waifu_img import WaifuImg
@@ -297,7 +297,6 @@ async def on_ready():
 
     # Load all commands (cogs)
     await bot.add_cog(Ping(bot))
-    await bot.add_cog(RockPaperScissors(bot))
     await bot.add_cog(Code(bot))
     await bot.add_cog(Deleted_Messages(bot))
     await bot.add_cog(Abby_mentions(bot))
@@ -309,7 +308,7 @@ async def on_ready():
     await bot.add_cog(ControlGroup(bot))
 
     
-    await bot.add_cog(Blackjack(bot))
+    await bot.add_cog(Minigames_commands(bot))
     await bot.add_cog(WaifuImg(bot))
     await bot.add_cog(CatImg(bot))
     await bot.add_cog(NekoImg(bot))
