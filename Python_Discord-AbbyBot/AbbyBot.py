@@ -31,14 +31,11 @@ from chat_commands.Code import Code
 from chat_commands.Help import Help
 from chat_commands.TellHistory import TellHistory
 from chat_commands.server_info import ServerInfo
-from chat_commands.User_info import UserInfo
+
+
+from chat_commands.user_commands import UserCommands
 
 # Settings commands import
-# from settings_commands.Set_language import SetLanguage
-# from settings_commands.set_prefix import SetPrefix
-# from settings_commands.Set_birthday import SetBirthday
-# from settings_commands.Set_birthday_channel import SetBirthDayChannel
-# from settings_commands.Set_logs_channel import SetLogsChannel
 
 from settings_commands.set_commands import SetCommands
 
@@ -318,7 +315,7 @@ async def on_ready():
     await bot.add_cog(NekoImg(bot))
     await bot.add_cog(DogImg(bot))
     await bot.add_cog(ServerInfo(bot))
-    await bot.add_cog(UserInfo(bot))
+    await bot.add_cog(UserCommands(bot))
 
 
     await bot.add_cog(BirthdayEvent(bot))
