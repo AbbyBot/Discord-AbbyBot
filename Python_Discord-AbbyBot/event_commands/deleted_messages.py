@@ -16,7 +16,6 @@ class Deleted_Messages(commands.Cog):
 
         # Prevent the bot from reacting to its own messages or responses
         if message.author == self.bot.user or message.reference:
-            print("Ignorando mensaje propio o respuesta")
             return
 
         author_id = str(message.author.id)
@@ -44,7 +43,6 @@ class Deleted_Messages(commands.Cog):
 
             # Extract language from server and if events are activated
             language_id, activated_events_value = result
-            print(f"Idioma del servidor: {language_id}, Eventos activados: {activated_events_value}")
 
             message_probability = random.randint(1,5)
 
