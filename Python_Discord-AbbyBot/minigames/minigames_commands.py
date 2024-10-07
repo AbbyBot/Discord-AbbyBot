@@ -11,6 +11,50 @@ class Minigames_commands(commands.GroupCog, name="minigames"):
     def __init__(self, bot):
         self.bot = bot
 
+    @app_commands.command(name="rps", description="Play Rock/Paper/Scissors with AbbyBot. Choose between rock, paper or scissors to play!")    
+    @app_commands.choices(option=[
+        discord.app_commands.Choice(name="Rock", value=1),
+        discord.app_commands.Choice(name="Paper", value=2),
+        discord.app_commands.Choice(name="Scissors", value=3),
+    ])
+
+    async def rockpaperscissors(self, interaction: discord.Interaction, option: int):
+            choices = ["Rock", "Paper", "Scissors"]
+            user_choice = choices[option - 1]
+            
+            await interaction.response.send_message(f"You chose {user_choice}.")
+
+            await asyncio.sleep(1)
+            await interaction.channel.send("Hmm... I'll choose...")
+
+            await asyncio.sleep(2)  
+            bot_choice = random.choice(choices)
+
+            await interaction.channel.send(f"{bot_choice}.")
+
+            result = self.determine_rps_winner(user_choice, bot_choice)
+
+            embed = discord.Embed(title="Rock, Paper, Scissors", description=result, color=discord.Color.blue())
+            embed.add_field(name="Your choice", value=user_choice, inline=True)
+            embed.add_field(name="Bot's choice", value=bot_choice, inline=True)
+
+            # Get the bot's avatar (cached if it's been called before)
+            bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
+    
+            embed.set_footer(text="AbbyBot", icon_url=bot_avatar_url)
+
+            await interaction.channel.send(embed=embed)
+
+    def determine_rps_winner(self, user_choice, bot_choice):
+        if user_choice == bot_choice:
+            return "It's a tie!"
+        elif (user_choice == "Rock" and bot_choice == "Scissors") or \
+            (user_choice == "Paper" and bot_choice == "Rock") or \
+            (user_choice == "Scissors" and bot_choice == "Paper"):
+            return "Congratulations! You won!"
+        else:
+            return "You lose! The bot wins this time."
+
     # Start blackjack
     @app_commands.command(name="blackjack", description="Play Blackjack with AbbyBot!")
     async def blackjack(self, interaction: discord.Interaction):
@@ -122,47 +166,3 @@ class BlackjackButtons(discord.ui.View):
 
     def display_hand(self, hand):
         return ', '.join(hand)
-
-    @app_commands.command(name="rps", description="Play Rock/Paper/Scissors with AbbyBot. Choose between rock, paper or scissors to play!")    
-    @app_commands.choices(option=[
-        discord.app_commands.Choice(name="Rock", value=1),
-        discord.app_commands.Choice(name="Paper", value=2),
-        discord.app_commands.Choice(name="Scissors", value=3),
-    ])
-
-    async def rockpaperscissors(self, interaction: discord.Interaction, option: int):
-            choices = ["Rock", "Paper", "Scissors"]
-            user_choice = choices[option - 1]
-            
-            await interaction.response.send_message(f"You chose {user_choice}.")
-
-            await asyncio.sleep(1)
-            await interaction.channel.send("Hmm... I'll choose...")
-
-            await asyncio.sleep(2)  
-            bot_choice = random.choice(choices)
-
-            await interaction.channel.send(f"{bot_choice}.")
-
-            result = self.determine_rps_winner(user_choice, bot_choice)
-
-            embed = discord.Embed(title="Rock, Paper, Scissors", description=result, color=discord.Color.blue())
-            embed.add_field(name="Your choice", value=user_choice, inline=True)
-            embed.add_field(name="Bot's choice", value=bot_choice, inline=True)
-
-            # Get the bot's avatar (cached if it's been called before)
-            bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
-    
-            embed.set_footer(text="AbbyBot", icon_url=bot_avatar_url)
-
-            await interaction.channel.send(embed=embed)
-
-    def determine_rps_winner(self, user_choice, bot_choice):
-        if user_choice == bot_choice:
-            return "It's a tie!"
-        elif (user_choice == "Rock" and bot_choice == "Scissors") or \
-            (user_choice == "Paper" and bot_choice == "Rock") or \
-            (user_choice == "Scissors" and bot_choice == "Paper"):
-            return "Congratulations! You won!"
-        else:
-            return "You lose! The bot wins this time."
