@@ -76,8 +76,6 @@ class Deleted_Messages(commands.Cog):
             db.close()
 
         except mysql.connector.Error as err:
-            print(f"Error en la base de datos: {err}")
             await message.channel.send("An error occurred while processing your request.")
         except Exception as e:
-            print(f"Error inesperado: {e}")
             await message.channel.send("An unexpected error occurred.")
