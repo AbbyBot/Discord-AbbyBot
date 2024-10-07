@@ -53,6 +53,12 @@ from event_commands.roles.on_guild_role_create import RoleCreateEvent
 from event_commands.roles.on_guild_role_delete import RoleDeleteEvent
 from event_commands.roles.on_guild_role_update import RoleUpdateEvent
 
+# Event Guild channel
+
+from event_commands.guild.on_guild_channel_create import ChannelCreateEvent
+from event_commands.guild.on_guild_channel_delete import ChannelDeleteEvent
+from event_commands.guild.on_guild_channel_update import ChannelUpdateEvent
+
 # Minigames import
 from minigames.minigames_commands import Minigames_commands
 
@@ -317,6 +323,13 @@ async def on_ready():
     await bot.add_cog(RoleCreateEvent(bot))
     await bot.add_cog(RoleDeleteEvent(bot))
     await bot.add_cog(RoleUpdateEvent(bot))
+
+    # Channels
+
+    await bot.add_cog(ChannelCreateEvent(bot))
+    await bot.add_cog(ChannelDeleteEvent(bot))
+    await bot.add_cog(ChannelUpdateEvent(bot))
+    
 
 
     try:
