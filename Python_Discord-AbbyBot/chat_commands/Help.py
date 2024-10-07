@@ -128,6 +128,3 @@ class Help(commands.Cog):
         cursor.close()
         db.close()
 
-# Add cog command
-async def setup(bot):
-    await bot.add_cog(Help(bot))

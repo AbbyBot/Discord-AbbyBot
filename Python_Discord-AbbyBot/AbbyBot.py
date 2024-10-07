@@ -26,11 +26,11 @@ db_config = {
 }
 
 # Chat commands import
-from chat_commands.Ping import Ping
-from chat_commands.Code import Code
+from chat_commands.ping import Ping
+from chat_commands.code import Code
 from chat_commands.Help import Help
-from chat_commands.TellHistory import TellHistory
-from chat_commands.server_info import ServerInfo
+from chat_commands.tell_history import TellHistory
+from chat_commands.server_commands import ServerCommands
 
 
 from chat_commands.user_commands import UserCommands
@@ -314,7 +314,7 @@ async def on_ready():
     await bot.add_cog(CatImg(bot))
     await bot.add_cog(NekoImg(bot))
     await bot.add_cog(DogImg(bot))
-    await bot.add_cog(ServerInfo(bot))
+    await bot.add_cog(ServerCommands(bot))
     await bot.add_cog(UserCommands(bot))
 
 

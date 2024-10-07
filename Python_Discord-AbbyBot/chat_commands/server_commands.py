@@ -8,11 +8,11 @@ import os
 # Load dotenv variables
 load_dotenv()
 
-class ServerInfo(commands.Cog):
+class ServerCommands(commands.GroupCog, name="server"):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(name="server_info", description="Check server info.")
+    @app_commands.command(name="info", description="Check server info.")
     async def server_info(self, interaction: discord.Interaction):
 
         # Connect to the database with dotenv variables
@@ -26,6 +26,14 @@ class ServerInfo(commands.Cog):
 
         # Get guild_id from the interaction
         guild_id = interaction.guild_id
+
+
+        bot_id = 1028065784016142398  # AbbyBot ID
+
+        async def get_bot_avatar():
+            bot_user = await self.bot.fetch_user(bot_id)
+            bot_avatar_url = bot_user.display_avatar.url
+            return bot_avatar_url
 
         # Fetch server information from database
         server_data_query = """
@@ -83,6 +91,14 @@ class ServerInfo(commands.Cog):
         if guild_icon_url:
             embed.set_thumbnail(url=guild_icon_url)
 
+        
+        bot_avatar_url = await get_bot_avatar()
+
+        embed.set_footer(
+            text="AbbyBot",  
+            icon_url=bot_avatar_url  
+        )
+
         # Send the embed
         await interaction.response.send_message(embed=embed)
 
@@ -90,6 +106,4 @@ class ServerInfo(commands.Cog):
         cursor.close()
         db.close()
 
-# Add the cog to the bot
-async def setup(bot):
-    await bot.add_cog(ServerInfo(bot))
+
