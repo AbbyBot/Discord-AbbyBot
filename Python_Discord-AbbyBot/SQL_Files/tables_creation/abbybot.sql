@@ -292,7 +292,7 @@ INSERT INTO type_event_message (id, type_message)
 VALUES
 (1, 'normal'),
 (2, 'angry'),
-(3, 'forgive');
+(3, 'forgive'),
 (4, 'delete');
 
 

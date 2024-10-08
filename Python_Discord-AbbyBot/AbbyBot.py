@@ -117,46 +117,42 @@ IMAGE_FOLDER = os.getenv('IMAGE_FOLDER_PATH')
 
 # Function to register or update a server
 def register_server(guild, cursor, db):
-    if not os.path.exists(IMAGE_FOLDER):
-        os.makedirs(IMAGE_FOLDER)
-
-    image_url = '0.png'  # Default value if no icon is found
-
-    cursor.execute("SELECT id FROM languages WHERE language_code = %s", ('en',))
-    default_language_id = cursor.fetchone()[0]
-
+    # Assign default value of 1 for language if not obtained from database
+    default_language_id = 1
+    
     cursor.execute("SELECT guild_id, guild_icon_url FROM server_settings WHERE guild_id = %s", (guild.id,))
     result = cursor.fetchone()
 
-    guild_icon_url = str(guild.icon.url) if guild.icon else None
-
+    # Assign default value of 1 for language if not obtained from database
+    guild_icon_url = str(guild.icon.url) if guild.icon else None  # Use the URL if it has an icon
+    
     if result is None:
-        if guild_icon_url:
-            image_url = download_and_save_icon(guild.id, guild_icon_url)
-
+        # Register the server for the first time
         cursor.execute("""
             INSERT INTO server_settings 
             (guild_id, guild_name, owner_id, member_count, prefix, guild_language, guild_icon_url, guild_icon_last_updated) 
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """, 
-            (guild.id, guild.name, guild.owner.id, guild.member_count, 'abbybot_', default_language_id, image_url, datetime.now())
+            (guild.id, guild.name, guild.owner.id, guild.member_count, 'abbybot_', default_language_id, guild_icon_url, datetime.now())
         )
         print(f"Server {guild.name} registered.")
     else:
-        stored_image_url = result[1]
-        if guild_icon_url and stored_image_url != guild_icon_url:
-            image_url = download_and_save_icon(guild.id, guild_icon_url)
-
-        cursor.execute("""
-            UPDATE server_settings 
-            SET guild_name = %s, owner_id = %s, member_count = %s, guild_icon_url = %s, guild_icon_last_updated = %s
-            WHERE guild_id = %s
-            """, 
-            (guild.name, guild.owner.id, guild.member_count, image_url, datetime.now(), guild.id)
-        )
-        print(f"Server {guild.name} updated.")
+        # If are already registered, update only if the icon URL has changed
+        stored_icon_url = result[1]  # The URL stored in the database
+        if guild_icon_url != stored_icon_url:
+            cursor.execute("""
+                UPDATE server_settings 
+                SET guild_name = %s, owner_id = %s, member_count = %s, guild_icon_url = %s, guild_icon_last_updated = %s
+                WHERE guild_id = %s
+                """, 
+                (guild.name, guild.owner.id, guild.member_count, guild_icon_url, datetime.now(), guild.id)
+            )
+            print(f"Server {guild.name} updated.")
     
     db.commit()
+
+
+
     # Register or update the members of the server
     register_members(guild, cursor, db)
 
@@ -381,27 +377,9 @@ async def on_guild_update(before, after):
             update_server_icon(after, cursor, db)
 
 # Function to check if the icon has changed by comparing current URL with the stored file
-def has_icon_changed(current_icon_url, stored_icon_filename):
-    try:
-        # Download the current icon image
-        response = requests.get(current_icon_url)
-        current_icon = Image.open(BytesIO(response.content))
+def has_icon_changed(guild_icon_hash, stored_icon_hash):
+    return guild_icon_hash != stored_icon_hash
 
-        # Genera la ruta completa del archivo almacenado
-        stored_icon_path = os.path.join(IMAGE_FOLDER, stored_icon_filename)
-
-        # Open the stored icon image
-        stored_icon = Image.open(stored_icon_path)
-
-        # Compare sizes as a simple check (you can expand this to pixel-by-pixel comparison)
-        if current_icon.size != stored_icon.size:
-            return True
-        
-        return False
-
-    except Exception as e:
-        print(f"Error comparing icons: {e}")
-        return True  # Assume icon has changed if there's an error
 
 
 # Function to update the server icon if it has changed
