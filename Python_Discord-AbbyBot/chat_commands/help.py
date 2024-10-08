@@ -131,10 +131,7 @@ class Help(commands.Cog):
 
         bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
 
-        embed.set_footer(
-            text="AbbyBot",  
-            icon_url=bot_avatar_url  
-        )
+        embed.set_footer(text="AbbyBot",  icon_url=bot_avatar_url)
 
         # Send message and image
         await interaction.response.send_message(embed=embed, file=file)

@@ -8,6 +8,9 @@ import requests
 import random
 import string
 from embeds.embeds import account_inactive_embed
+from utils.utils import get_bot_avatar
+
+
 
 # Load dotenv variables
 load_dotenv()
@@ -122,7 +125,11 @@ class ImageCommands(commands.GroupCog, name="image"):
                 color=discord.Color.random()
             )
             embed.set_image(url=f"attachment://{filename}")
-            embed.set_footer(text="Powered by cataas.com" if language_id == 1 else "Imagen por cataas.com")
+
+            bot_id = 1028065784016142398  # AbbyBot ID
+            bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
+
+            embed.set_footer(text="Powered by cataas.com" if language_id == 1 else "Imagen por cataas.com",  icon_url=bot_avatar_url)
 
             # Send the final response with the image
             await interaction.followup.send(embed=embed, file=file)
@@ -212,7 +219,11 @@ class ImageCommands(commands.GroupCog, name="image"):
             color=discord.Color.random()
         )
         embed.set_image(url=img_dog)
-        embed.set_footer(text="Powered by RandomDog API" if language_id == 1 else "Imagen por RandomDog API")
+
+        bot_id = 1028065784016142398  # AbbyBot ID
+        bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
+
+        embed.set_footer(text="Powered by RandomDog API" if language_id == 1 else "Imagen por RandomDog API", icon_url=bot_avatar_url)
 
         await interaction.followup.send(embed=embed)
 
@@ -310,7 +321,11 @@ class ImageCommands(commands.GroupCog, name="image"):
             embed.add_field(name="Source" if language_id == 1 else "Recurso", value=f"[{'Go URL' if language_id == 1 else 'Ir a la URL'}]({source_url})", inline=False)
             
             embed.set_image(url=img_neko)
-            embed.set_footer(text="Powered by nekos.best API" if language_id == 1 else "Imagen por nekos.best API")
+
+            bot_id = 1028065784016142398  # AbbyBot ID
+            bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
+
+            embed.set_footer(text="Powered by nekos.best API" if language_id == 1 else "Imagen por nekos.best API", icon_url=bot_avatar_url)
 
             await interaction.followup.send(embed=embed)
         else:
@@ -429,7 +444,12 @@ class ImageCommands(commands.GroupCog, name="image"):
             color=discord.Color.random()
         )
         embed.set_image(url=img_waifu)
-        embed.set_footer(text="Powered by waifu.pics API" if language_id == 1 else "Imagen por waifu.pics API")
+
+
+        bot_id = 1028065784016142398  # AbbyBot ID
+        bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
+    
+        embed.set_footer(text="Powered by waifu.pics API" if language_id == 1 else "Imagen por waifu.pics API", icon_url=bot_avatar_url)
 
         await interaction.response.send_message(embed=embed)
 
