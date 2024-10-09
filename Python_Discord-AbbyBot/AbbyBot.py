@@ -6,10 +6,8 @@ import mysql.connector
 import sys
 import schedule
 import time
-import requests
-from PIL import Image
-from io import BytesIO
 from datetime import datetime
+import random
 
 # Load dotenv variables
 load_dotenv()
@@ -91,29 +89,6 @@ def ensure_tables_exist(cursor):
         else:
             print(f"Table {table} already exists.")
 
-# Function to download and save the icon
-def download_and_save_icon(guild_id, guild_icon_url):
-    try:
-        response = requests.get(guild_icon_url)
-        img = Image.open(BytesIO(response.content))
-
-        # Convert to RGB if necessary
-        if img.mode == 'RGBA':
-            img = img.convert('RGB')
-
-        image_filename = f"{guild_id}.jpg"
-        image_path = os.path.join(IMAGE_FOLDER, image_filename)
-        img.save(image_path, "JPEG")
-        print(f"Image saved at: {image_path}")
-
-        return image_filename
-    except Exception as e:
-        print(f"Error downloading or saving the server's icon: {e}")
-        return '0.png'
-
-
-# Path of the folder where the images will be stored
-IMAGE_FOLDER = os.getenv('IMAGE_FOLDER_PATH')
 
 # Function to register or update a server
 def register_server(guild, cursor, db):
@@ -123,8 +98,9 @@ def register_server(guild, cursor, db):
     cursor.execute("SELECT guild_id, guild_icon_url FROM server_settings WHERE guild_id = %s", (guild.id,))
     result = cursor.fetchone()
 
-    # Assign default value of 1 for language if not obtained from database
-    guild_icon_url = str(guild.icon.url) if guild.icon else None  # Use the URL if it has an icon
+    # Get the Discord icon URL, and use the default URL if there is no icon
+    random_avatar = random.randint(1, 5)
+    guild_icon_url = str(guild.icon.url) if guild.icon else f'https://cdn.discordapp.com/embed/avatars/{random_avatar}.png'
     
     if result is None:
         # Register the server for the first time
@@ -137,7 +113,7 @@ def register_server(guild, cursor, db):
         )
         print(f"Server {guild.name} registered.")
     else:
-        # If are already registered, update only if the icon URL has changed
+        # If the server is already registered, update only if the icon URL has changed
         stored_icon_url = result[1]  # The URL stored in the database
         if guild_icon_url != stored_icon_url:
             cursor.execute("""
@@ -150,9 +126,6 @@ def register_server(guild, cursor, db):
             print(f"Server {guild.name} updated.")
     
     db.commit()
-
-
-
     # Register or update the members of the server
     register_members(guild, cursor, db)
 
@@ -209,7 +182,6 @@ def register_members(guild, cursor, db):
 
         db.commit()
         register_user_roles(guild.id, member, cursor, db)
-
 
 # Register or update user roles
 def register_user_roles(guild_id, member, cursor, db):
@@ -274,15 +246,8 @@ async def on_ready():
             cursor.execute("SELECT guild_icon_url FROM server_settings WHERE guild_id = %s", (guild.id,))
             result = cursor.fetchone()
 
-            if result:
-                stored_icon_path = result[0]
-                guild_icon_url = str(guild.icon.url) if guild.icon else None
-
-                if guild_icon_url:
-                    # Compare the stored icon with the current icon
-                    if not stored_icon_path or not os.path.exists(stored_icon_path) or has_icon_changed(guild_icon_url, stored_icon_path):
-                        # Update the server icon if changed or the file does not exist
-                        update_server_icon(guild, cursor, db)
+            random_avatar = random.randint(1, 5)
+            guild_icon_url = str(guild.icon.url) if guild.icon else f'https://cdn.discordapp.com/embed/avatars/{random_avatar}.png'
 
             # Register the server and update user statuses
             register_server(guild, cursor, db)
@@ -339,7 +304,6 @@ async def on_ready():
 async def on_message(message):
     if message.author.bot:
         return
-    
     # If message is DM
     if isinstance(message.channel, discord.DMChannel):
         embed = discord.Embed(
@@ -376,39 +340,32 @@ async def on_guild_update(before, after):
             # Call a function to update the server icon
             update_server_icon(after, cursor, db)
 
-# Function to check if the icon has changed by comparing current URL with the stored file
-def has_icon_changed(guild_icon_hash, stored_icon_hash):
-    return guild_icon_hash != stored_icon_hash
-
-
 
 # Function to update the server icon if it has changed
 def update_server_icon(guild, cursor, db):
-    if not os.path.exists(IMAGE_FOLDER):
-        os.makedirs(IMAGE_FOLDER)
+    # Get the URL of the server icon or a default URL if it has no icon
+    random_avatar = random.randint(1, 5)
+    guild_icon_url = str(guild.icon.url) if guild.icon else f'https://cdn.discordapp.com/embed/avatars/{random_avatar}.png'
 
-    guild_icon_url = str(guild.icon.url) if guild.icon else None
+    # Get the URL stored in the database
+    cursor.execute("SELECT guild_icon_url FROM server_settings WHERE guild_id = %s", (guild.id,))
+    result = cursor.fetchone()
+    stored_icon_url = result[0] if result else None
 
-    if guild_icon_url:
-        cursor.execute("SELECT guild_icon_url FROM server_settings WHERE guild_id = %s", (guild.id,))
-        result = cursor.fetchone()
-        stored_icon_filename = result[0] if result else None
+    # Compare the stored URL with the new icon URL
+    if stored_icon_url == guild_icon_url:
+        print(f"Icon has not changed for {guild.name}, skipping update.")
+        return
 
-        if stored_icon_filename and not has_icon_changed(guild_icon_url, stored_icon_filename):
-            print(f"Icon has not changed for {guild.name}, skipping update.")
-            return
-
-        image_filename = download_and_save_icon(guild.id, guild_icon_url)
-
-        cursor.execute("""
-            UPDATE server_settings 
-            SET guild_icon_url = %s, guild_icon_last_updated = %s
-            WHERE guild_id = %s
-            """, 
-            (image_filename, datetime.now(), guild.id)
-        )
-        db.commit()
-
+    # Update the icon URL in the database if it has changed
+    cursor.execute("""
+        UPDATE server_settings 
+        SET guild_icon_url = %s, guild_icon_last_updated = %s
+        WHERE guild_id = %s
+        """, 
+        (guild_icon_url, datetime.now(), guild.id)
+    )
+    db.commit()
 
 @bot.event
 async def on_guild_remove(guild):
@@ -426,16 +383,7 @@ async def on_guild_remove(guild):
             # Delete server-related `dashboard` logs
             cursor.execute("DELETE FROM dashboard WHERE guild_id = %s", (guild.id,))
             
-            # Fetch the current icon URL before deleting the server entry
-            cursor.execute("SELECT guild_icon_url FROM server_settings WHERE guild_id = %s", (guild.id,))
-            result = cursor.fetchone()
-            if result:
-                icon_path = result[0]
-                if os.path.exists(icon_path):
-                    os.remove(icon_path)  # Delete the server icon file
-                    print(f"Deleted server icon file at: {icon_path}")
-            
-            # Finally, remove the server from the `server_settings` table
+            # Remove the server from the `server_settings` table
             cursor.execute("DELETE FROM server_settings WHERE guild_id = %s", (guild.id,))
             
             # Commit changes
@@ -444,6 +392,7 @@ async def on_guild_remove(guild):
         except Exception as e:
             db.rollback()  # Rollback if something fails
             print(f"Error deleting data for server '{guild.name}' (ID: {guild.id}): {e}")
+
 
 @bot.event
 async def on_guild_join(guild):
@@ -490,8 +439,6 @@ async def on_member_update(before, after):
                     (guild_id, user_id, role.id)
                 )
                 db.commit()
-
-
 
 @bot.event
 async def on_close():
