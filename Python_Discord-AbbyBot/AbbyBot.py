@@ -8,6 +8,8 @@ import schedule
 import time
 from datetime import datetime
 import random
+import signal
+import requests
 
 # Load dotenv variables
 load_dotenv()
@@ -229,12 +231,17 @@ def update_user_status(guild, cursor, db):
     db.commit()
 
 
+
+
 # Discord bot setup
 bot = commands.Bot(command_prefix='abbybot_', intents=discord.Intents.all())
 
 @bot.event
 async def on_ready():
     print(f'Bot started as {bot.user.name}')
+
+    # Notify the API that AbbyBot is online
+    notify_api_status("online")
     
     with get_db_connection() as db:
         cursor = db.cursor()
@@ -298,6 +305,29 @@ async def on_ready():
         print(f"Successfully synced {len(synced_commands)} commands.")
     except Exception as e:
         print(f"An error occurred while syncing commands: {e}")
+
+
+
+def notify_api_status(status):
+    try:
+        # API URL
+        api_url = os.getenv("API_URL")  
+
+        # Data to be sent to the API
+        data = {"status": status}
+
+        # Make a POST request to the API with the data in JSON format
+        response = requests.post(api_url, json=data)
+
+        # We check the API response code
+        if response.status_code == 200:
+            print(f"API notified: AbbyBot is {status}.")
+        else:
+            print(f"Failed to notify API. Status code: {response.status_code}, Response: {response.text}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error notifying API: {e}")
+
+
 
 
 @bot.event
@@ -402,6 +432,7 @@ async def on_guild_join(guild):
         register_server(guild, cursor, db)
     print(f"Joined and registered new server: {guild.name}")
 
+
 @bot.event
 async def on_member_update(before, after):
     guild_id = after.guild.id
@@ -440,9 +471,19 @@ async def on_member_update(before, after):
                 )
                 db.commit()
 
-@bot.event
-async def on_close():
-    print("Bot is shutting down.")
+
+# Signal handler to capture Ctrl+C and notify offline
+def handle_shutdown(signal_received, frame):
+    print("Bot is shutting down...")
+
+    # Notify the API that the bot is offline
+    notify_api_status("offline")
+
+    # Close the bot in a controlled manner
+    sys.exit(0)
+
+# Capture the Ctrl+C (SIGINT) signal to execute handle_shutdown
+signal.signal(signal.SIGINT, handle_shutdown)
 
 try:
     bot.run(token)
