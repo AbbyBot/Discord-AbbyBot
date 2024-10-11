@@ -13,7 +13,7 @@ class ChannelUpdateEvent(commands.Cog):
 
     # Event: on_guild_channel_update
     @commands.Cog.listener()
-    async def on_guild_channel_update(self, before: discord.TextChannel, after: discord.TextChannel):
+    async def on_guild_channel_update(self, before: discord.abc.GuildChannel, after: discord.abc.GuildChannel):
         # Load dotenv variables
         db = mysql.connector.connect(
             host=os.getenv("DB_HOST"),
@@ -56,13 +56,17 @@ class ChannelUpdateEvent(commands.Cog):
             after_category = after.category.name if after.category else "No category"
             changes.append(f"Category changed from **{before_category}** to **{after_category}**.")
 
-        if before.slowmode_delay != after.slowmode_delay:
-            changes.append(f"Slowmode delay changed from **{before.slowmode_delay}**s to **{after.slowmode_delay}**s.")
+        # Only check for slowmode_delay if it's a TextChannel
+        if isinstance(before, discord.TextChannel) and isinstance(after, discord.TextChannel):
+            if before.slowmode_delay != after.slowmode_delay:
+                changes.append(f"Slowmode delay changed from **{before.slowmode_delay}**s to **{after.slowmode_delay}**s.")
 
-        if (before.topic or "No topic") != (after.topic or "No topic"):  # Ensure empty topics are treated as 'No topic'
-            before_topic = before.topic if before.topic else "No topic"
-            after_topic = after.topic if after.topic else "No topic"
-            changes.append(f"Channel topic changed from **{before_topic}** to **{after_topic}**.")
+        # Only check for topic if it's a TextChannel
+        if isinstance(before, discord.TextChannel) and isinstance(after, discord.TextChannel):
+            if (before.topic or "No topic") != (after.topic or "No topic"):  # Ensure empty topics are treated as 'No topic'
+                before_topic = before.topic if before.topic else "No topic"
+                after_topic = after.topic if after.topic else "No topic"
+                changes.append(f"Channel topic changed from **{before_topic}** to **{after_topic}**.")
 
         # If there are no changes, exit the function
         if not changes:
@@ -87,6 +91,6 @@ class ChannelUpdateEvent(commands.Cog):
             if logs_channel is not None:
                 await logs_channel.send(response_message)
 
-        # Close bd
+        # Close db
         cursor.close()
         db.close()
