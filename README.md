@@ -12,6 +12,7 @@ powered by
 ![image]( https://img.shields.io/badge/dotenv-darkgreen?style=for-the-badge&logo=dotenv&logoColor=EEF37B)
 </div>
 
+
 AbbyBot is a multi-purpose discord application, mainly dedicated to the entertainment and administrative sector.
 
 
@@ -45,8 +46,8 @@ AbbyBot is built with the use of global variables (dotenv), so you need to creat
 | `DB_PASSWORD`      | Password for your database connection.                                          |
 | `DB_NAME`          | The name of the schema to be used by AbbyBot.                                   |
 | `EMOJIS`           | A list of Discord emojis used randomly by AbbyBot. Example: `<:emoji_name:id>`. |
-| `IMAGE_FOLDER_PATH`| The absolute path on your system where the bot will store images, such as server|
-|                    |  icons. Example: `/home/astronautmarkus/AbbyBotData/images/guild_images/`.      |
+| `API_URL`| API URL to do a POST when AbbyBot is online or offline Example: `https://api.com/bot-info`.|
+
 
 
 
