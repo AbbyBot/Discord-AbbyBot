@@ -87,20 +87,24 @@ def ensure_tables_exist(cursor):
     for table in tables:
         cursor.execute(f"SHOW TABLES LIKE '{table}';")
         if cursor.fetchone() is None:
-            print(f"Table {table} does not exist. You should create it.")
+            print("\033[31m" + f"Table {table} does not exist. You should create it." + "\033[0m")
         else:
-            print(f"Table {table} already exists.")
+            print("\033[32m" + f"Table {table} already exists." + "\033[0m")
+
+
+
 
 
 # Function to register or update a server
+
 def register_server(guild, cursor, db):
-    # Assign default value of 1 for language if not obtained from database
+    # Default language (English)
     default_language_id = 1
     
     cursor.execute("SELECT guild_id, guild_icon_url FROM server_settings WHERE guild_id = %s", (guild.id,))
     result = cursor.fetchone()
 
-    # Get the Discord icon URL, and use the default URL if there is no icon
+    # Get the Discord icon URL, and use a default URL if there is no icon
     random_avatar = random.randint(1, 5)
     guild_icon_url = str(guild.icon.url) if guild.icon else f'https://cdn.discordapp.com/embed/avatars/{random_avatar}.png'
     
@@ -113,10 +117,10 @@ def register_server(guild, cursor, db):
             """, 
             (guild.id, guild.name, guild.owner.id, guild.member_count, 'abbybot_', default_language_id, guild_icon_url, datetime.now())
         )
-        print(f"Server {guild.name} registered.")
+        print("\033[32m" + f"Server {guild.name} registered." + "\033[0m")
     else:
         # If the server is already registered, update only if the icon URL has changed
-        stored_icon_url = result[1]  # The URL stored in the database
+        stored_icon_url = result[1]  # URL in bd
         if guild_icon_url != stored_icon_url:
             cursor.execute("""
                 UPDATE server_settings 
@@ -125,11 +129,13 @@ def register_server(guild, cursor, db):
                 """, 
                 (guild.name, guild.owner.id, guild.member_count, guild_icon_url, datetime.now(), guild.id)
             )
-            print(f"Server {guild.name} updated.")
+            print("\033[33m" + f"Server {guild.name} updated." + "\033[0m") 
     
     db.commit()
-    # Register or update the members of the server
+    # Register or update server members
     register_members(guild, cursor, db)
+
+
 
 def register_members(guild, cursor, db):
     for member in guild.members:
@@ -200,6 +206,7 @@ def register_user_roles(guild_id, member, cursor, db):
             )
             db.commit()
 
+
 # Update user status (active/inactive) without overriding previous inactive status
 def update_user_status(guild, cursor, db):
     # Get all registered users in the database for this server, now from `user_profile` via a join with `dashboard`
@@ -231,14 +238,12 @@ def update_user_status(guild, cursor, db):
     db.commit()
 
 
-
-
 # Discord bot setup
 bot = commands.Bot(command_prefix='abbybot_', intents=discord.Intents.all())
 
 @bot.event
 async def on_ready():
-    print(f'Bot started as {bot.user.name}')
+    print("\033[34m" + 'Bot started as ' + bot.user.name + "\033[0m")
 
     # Notify the API that AbbyBot is online
     notify_api_status("online")
@@ -316,17 +321,19 @@ def notify_api_status(status):
         # Data to be sent to the API
         data = {"status": status}
 
-        # Make a POST request to the API with the data in JSON format
+        # POST request to the API with the data in JSON format
         response = requests.post(api_url, json=data)
 
-        # We check the API response code
+        # Check the API response code
         if response.status_code == 200:
-            print(f"API notified: AbbyBot is {status}.")
-        else:
-            print(f"Failed to notify API. Status code: {response.status_code}, Response: {response.text}")
-    except requests.exceptions.RequestException as e:
-        print(f"Error notifying API: {e}")
 
+            print("\033[32m" + f"API notified: AbbyBot is {status}." + "\033[0m")
+        else:
+
+            print("\033[33m" + f"Failed to notify API. Status code: {response.status_code}, Response: {response.text}" + "\033[0m")
+    except requests.exceptions.RequestException as e:
+
+        print("\033[31m" + f"Error notifying API: {e}" + "\033[0m")
 
 
 
@@ -362,11 +369,8 @@ async def on_message(message):
 async def on_guild_update(before, after):
     # Check if the icon has changed
     if before.icon != after.icon:
-        print(f"Icon changed for {after.name}")
-        
         with get_db_connection() as db:
             cursor = db.cursor()
-            
             # Call a function to update the server icon
             update_server_icon(after, cursor, db)
 
@@ -384,7 +388,7 @@ def update_server_icon(guild, cursor, db):
 
     # Compare the stored URL with the new icon URL
     if stored_icon_url == guild_icon_url:
-        print(f"Icon has not changed for {guild.name}, skipping update.")
+        print("\033[34m" + "Icon has not changed for " + guild.name + ", skipping update." + "\033[0m")
         return
 
     # Update the icon URL in the database if it has changed
@@ -396,6 +400,7 @@ def update_server_icon(guild, cursor, db):
         (guild_icon_url, datetime.now(), guild.id)
     )
     db.commit()
+
 
 @bot.event
 async def on_guild_remove(guild):
@@ -418,10 +423,13 @@ async def on_guild_remove(guild):
             
             # Commit changes
             db.commit()
-            print(f"All data related to server '{guild.name}' (ID: {guild.id}) has been deleted.")
+
+            print("\033[32m" + f"All data related to server '{guild.name}' (ID: {guild.id}) has been deleted." + "\033[0m")
         except Exception as e:
             db.rollback()  # Rollback if something fails
-            print(f"Error deleting data for server '{guild.name}' (ID: {guild.id}): {e}")
+
+            print("\033[31m" + f"Error deleting data for server '{guild.name}' (ID: {guild.id}): {e}" + "\033[0m")
+
 
 
 @bot.event
@@ -430,7 +438,7 @@ async def on_guild_join(guild):
     with get_db_connection() as db:
         cursor = db.cursor()
         register_server(guild, cursor, db)
-    print(f"Joined and registered new server: {guild.name}")
+        print("\033[32m" + "Joined and registered new server: " + guild.name + "\033[0m")
 
 
 @bot.event
@@ -474,7 +482,7 @@ async def on_member_update(before, after):
 
 # Signal handler to capture Ctrl+C and notify offline
 def handle_shutdown(signal_received, frame):
-    print("Bot is shutting down...")
+    print("\033[31m" + "\nBot is shutting down..." + "\033[0m")
 
     # Notify the API that the bot is offline
     notify_api_status("offline")
