@@ -62,6 +62,9 @@ from event_commands.guild.on_guild_channel_update import ChannelUpdateEvent
 # Minigames import
 from minigames.minigames_commands import Minigames_commands
 
+# Members role
+from event_commands.members.on_member_update import MemberUpdateEvent
+
 
 # APIs commands import
 from api_commands.image_commands import ImageCommands
@@ -302,6 +305,9 @@ async def on_ready():
     await bot.add_cog(ChannelCreateEvent(bot))
     await bot.add_cog(ChannelDeleteEvent(bot))
     await bot.add_cog(ChannelUpdateEvent(bot))
+
+
+    await bot.add_cog(MemberUpdateEvent(bot))
     
 
 
