@@ -93,7 +93,7 @@ class UserCommands(commands.GroupCog, name="user"):
 
         if user_info:
             username = user_info[0]
-            user_nickname = user_info[1] if user_info[1] else (member.nick if member.nick else member.name)
+            user_nickname = user_info[1] if user_info[1] else (member.display_name if member.display_name else member.name)
             user_birthday = user_info[2] if user_info[2] else "Unknown"
             
             # Formatting the date according to the language

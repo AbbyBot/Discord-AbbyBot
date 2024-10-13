@@ -55,9 +55,9 @@ class MemberUpdateEvent(commands.Cog):
         changes = []
 
         # Handle nickname changes
-        if before.nick != after.nick:
-            before_nick = before.nick if before.nick is not None else before.name  # Show username if no previous nickname
-            after_nick = after.nick if after.nick is not None else after.name  # Show username if no current nickname
+        if before.display_name != after.display_name:
+            before_nick = before.display_name if before.display_name is not None else before.name  # Show username if no previous nickname
+            after_nick = after.display_name if after.display_name is not None else after.name  # Show username if no current nickname
 
             if language_id == 1:
                 changes.append(f"Nickname changed from **{before_nick}** to **{after_nick}**.")
