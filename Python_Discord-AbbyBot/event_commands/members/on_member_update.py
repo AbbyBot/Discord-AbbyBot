@@ -51,16 +51,45 @@ class MemberUpdateEvent(commands.Cog):
         bot_id = 1028065784016142398  # AbbyBot ID
         bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
 
-        # Compare role attributes and generate changes
+        # Compare changes
         changes = []
 
-        # Handle role changes
+        # Handle nickname changes
+        if before.nick != after.nick:
+            before_nick = before.nick if before.nick is not None else before.name  # Show username if no previous nickname
+            after_nick = after.nick if after.nick is not None else after.name  # Show username if no current nickname
+
+            if language_id == 1:
+                changes.append(f"Nickname changed from **{before_nick}** to **{after_nick}**.")
+            elif language_id == 2:
+                changes.append(f"Apodo cambiado de **{before_nick}** a **{after_nick}**.")
+
+            # Get user_id from the user_profile using Discord's member ID (after.id)
+            cursor.execute("""
+                SELECT ds.user_profile_id
+                FROM dashboard ds
+                JOIN user_profile up ON ds.user_profile_id = up.id
+                WHERE ds.guild_id = %s AND up.user_id = %s;
+            """, (guild_id, after.id))
+            user_profile = cursor.fetchone()
+
+            # Check if user_profile was found
+            if user_profile is not None:
+                user_id = user_profile[0]
+                
+                # Now that you have the user_id, you can proceed with updating the nickname
+                cursor.execute("""
+                    UPDATE dashboard 
+                    SET user_server_nickname = %s 
+                    WHERE user_profile_id = %s AND guild_id = %s
+                """, (after_nick, user_id, guild_id))
+                db.commit()
+
+        # Handle role changes (already implemented)
         if before.roles != after.roles:
-            # Convert roles before and after to sets for easier comparison
             roles_before = set(before.roles)
             roles_after = set(after.roles)
 
-            # Roles added
             added_roles = roles_after - roles_before
             if added_roles:
                 for role in added_roles:
@@ -69,7 +98,6 @@ class MemberUpdateEvent(commands.Cog):
                     elif language_id == 2:
                         changes.append(f"Rol añadido: **{role.name}**.")
 
-            # Roles removed
             removed_roles = roles_before - roles_after
             if removed_roles:
                 for role in removed_roles:
@@ -85,8 +113,8 @@ class MemberUpdateEvent(commands.Cog):
             if language_id == 1:  # English
                 english_datetime = now.strftime("%m/%d/%Y %H:%M:%S")
                 embed = discord.Embed(
-                    title="Role Updated",
-                    description="Changes in member roles:",
+                    title="Member Updated",
+                    description="Changes in member attributes:",
                     color=discord.Color.green()
                 )
                 embed.set_thumbnail(url=bot_avatar_url)
@@ -97,13 +125,13 @@ class MemberUpdateEvent(commands.Cog):
             elif language_id == 2:  # Spanish
                 spanish_datetime = now.strftime("%d/%m/%Y %H:%M:%S")
                 embed = discord.Embed(
-                    title="Rol Actualizado",
-                    description="Cambios en los roles del miembro:",
+                    title="Miembro Actualizado",
+                    description="Cambios en los atributos del miembro:",
                     color=discord.Color.green()
                 )
                 embed.set_thumbnail(url=bot_avatar_url)
                 embed.add_field(name="Fecha y hora", value=spanish_datetime, inline=True)
-                embed.add_field(name="Cambios", value="\n".join(changes), inline=False)
+                embed.add_field(name="Cambios", value="\n.join(changes)", inline=False)
                 embed.set_footer(text="AbbyBot", icon_url=bot_avatar_url)
 
             # Get logs_channel ID
@@ -111,7 +139,7 @@ class MemberUpdateEvent(commands.Cog):
             default_channel = cursor.fetchone()
 
             if default_channel is not None and default_channel[0] is not None:
-                logs_channel = self.bot.get_channel(default_channel[0])  # Get the TextChannel object
+                logs_channel = self.bot.get_channel(default_channel[0])
 
                 if logs_channel is not None:
                     await logs_channel.send(embed=embed)
@@ -119,4 +147,3 @@ class MemberUpdateEvent(commands.Cog):
         # Close db connection
         cursor.close()
         db.close()
-

@@ -93,7 +93,7 @@ class UserCommands(commands.GroupCog, name="user"):
 
         if user_info:
             username = user_info[0]
-            user_nickname = user_info[1] if user_info[1] else member.nick
+            user_nickname = user_info[1] if user_info[1] else (member.nick if member.nick else member.name)
             user_birthday = user_info[2] if user_info[2] else "Unknown"
             
             # Formatting the date according to the language
@@ -158,7 +158,8 @@ class UserCommands(commands.GroupCog, name="user"):
             embed = discord.Embed(title=f"User Information for {username}", color=color)
             embed.set_thumbnail(url=avatar_url)
             embed.add_field(name="Username", value=username, inline=True)
-            embed.add_field(name="User Nickname", value=user_nickname, inline=True)
+            if user_nickname != username:
+                embed.add_field(name="Nickname in server", value=user_nickname, inline=True)
             embed.add_field(name="User ID", value=user_id, inline=True)
             embed.add_field(name="Account Created", value=created_at, inline=True)
             embed.add_field(name="Joined Server", value=joined_at, inline=True)
@@ -174,8 +175,9 @@ class UserCommands(commands.GroupCog, name="user"):
         elif language_id == 2:
             embed = discord.Embed(title=f"Información del Usuario {username}", color=color)
             embed.set_thumbnail(url=avatar_url)
-            embed.add_field(name="Nombre de usuario", value=username, inline=True)
-            embed.add_field(name="Apodo", value=user_nickname, inline=True)
+            if user_nickname != username:
+                embed.add_field(name="Nombre de usuario", value=username, inline=True)
+            embed.add_field(name="Apodo en servidor", value=user_nickname, inline=True)
             embed.add_field(name="ID de usuario", value=user_id, inline=True)
             embed.add_field(name="Cuenta creada", value=created_at, inline=True)
             embed.add_field(name="Se unió al servidor", value=joined_at, inline=True)
