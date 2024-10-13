@@ -49,9 +49,6 @@ class ChannelUpdateEvent(commands.Cog):
             return
         language_id = result[0]
 
-        bot_id = 1028065784016142398  # AbbyBot ID
-
-        bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
 
         changes = []
 
@@ -79,8 +76,7 @@ class ChannelUpdateEvent(commands.Cog):
 
         # If there are changes, format them as a bulleted list
         if changes:
-            formatted_changes = "\n".join([f"• {change}" for change in changes])  # Add bullet points
-
+            formatted_changes = "\n".join([f"{change}" for change in changes])
 
         # If there are no changes, exit the function
         if not changes:
@@ -90,6 +86,22 @@ class ChannelUpdateEvent(commands.Cog):
 
         # Check language and create response message
         
+        # Get server icon from db
+        cursor.execute("SELECT guild_icon_url FROM server_settings WHERE guild_id = %s", (guild_id,))
+        guild_avatar_url = cursor.fetchone()
+
+        # Get AbbyBot ID and icon
+        bot_id = 1028065784016142398  # AbbyBot ID
+        abbyBot_guild_icon = await get_bot_avatar(self.bot, bot_id)
+
+
+        if guild_avatar_url is None or not guild_avatar_url[0].startswith("http"):
+            
+            guild_avatar_url = "https://cdn.discordapp.com/embed/avatars/0.png"  
+        else:
+            guild_avatar_url = guild_avatar_url[0]
+
+
 
         if language_id == 1:
             now = datetime.now()
@@ -99,12 +111,12 @@ class ChannelUpdateEvent(commands.Cog):
                 description=f"The channel {before.name} has been updated.",
                 color=discord.Color.green()
             )
-            embed.set_thumbnail(url=bot_avatar_url)
+            embed.set_thumbnail(url=guild_avatar_url)
             embed.add_field(name="Date and time", value=english_datetime, inline=True)
             embed.add_field(name="Changes", value=formatted_changes, inline=False)  # Use formatted changes
             embed.set_footer(
                 text="AbbyBot",  
-                icon_url=bot_avatar_url  
+                icon_url=abbyBot_guild_icon  
             )
 
         elif language_id == 2:
@@ -115,14 +127,13 @@ class ChannelUpdateEvent(commands.Cog):
                 description=f"El canal {before.name} ha sido actualizado.",
                 color=discord.Color.green()
             )
-            embed.set_thumbnail(url=bot_avatar_url)
+            embed.set_thumbnail(url=guild_avatar_url)
             embed.add_field(name="Fecha y hora", value=spanish_datetime, inline=True)
             embed.add_field(name="Lista de cambios", value=formatted_changes, inline=False)  # Use formatted changes
             embed.set_footer(
                 text="AbbyBot",  
-                icon_url=bot_avatar_url  
+                icon_url=abbyBot_guild_icon  
             )
-        
 
         # Get logs_channel ID
         cursor.execute("SELECT logs_channel FROM server_settings WHERE guild_id = %s", (guild_id,))
