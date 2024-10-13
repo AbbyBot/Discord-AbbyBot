@@ -3,6 +3,8 @@ from discord.ext import commands
 import mysql.connector
 from dotenv import load_dotenv
 import os
+from utils.utils import get_bot_avatar
+from datetime import datetime
 
 # Load dotenv variables
 load_dotenv()
@@ -23,7 +25,7 @@ class ChannelDeleteEvent(commands.Cog):
         )
         cursor = db.cursor()
 
-        guild_id = channel.guild.id  # Here we get the server ID through the channel
+        guild_id = channel.guild.id  # Get server ID
 
         # Check if the server has activated_logs = 1
         cursor.execute("SELECT activated_logs FROM server_settings WHERE guild_id = %s", (guild_id,))
@@ -52,10 +54,50 @@ class ChannelDeleteEvent(commands.Cog):
 
         # Check language and create response message
         language_id = result[0]
+
+        # Get server icon from db
+        cursor.execute("SELECT guild_icon_url FROM server_settings WHERE guild_id = %s", (guild_id,))
+        bot_avatar_url = cursor.fetchone()
+
+        # Get AbbyBot ID and icon
+        bot_id = 1028065784016142398  # AbbyBot ID
+        abbyBot_guild_icon = await get_bot_avatar(self.bot, bot_id)
+
+
+        if bot_avatar_url is None or not bot_avatar_url[0].startswith("http"):
+            
+            bot_avatar_url = "https://cdn.discordapp.com/embed/avatars/0.png"  
+        else:
+            bot_avatar_url = bot_avatar_url[0]
+
+        now = datetime.now()
         if language_id == 1:
-            response_message = f"The channel **{channel.name}** has been deleted by **{user.name}**."
+
+            english_datetime = now.strftime("%m/%d/%Y %H:%M:%S")
+            embed = discord.Embed(
+                title="Channel deleted",
+                description="A channel has been deleted:",
+                color=discord.Color.green()
+            )
+            embed.set_thumbnail(url=bot_avatar_url)
+            embed.add_field(name="Date and time", value=english_datetime, inline=True)
+            embed.add_field(name="Channel name", value=f"{channel.name}", inline=True)
+            embed.add_field(name="Who deleted it?", value=f"{user.name}", inline=True)
+            embed.set_footer(text="AbbyBot", icon_url=abbyBot_guild_icon)
+
         elif language_id == 2:
-            response_message = f"El canal **{channel.name}** ha sido eliminado por **{user.name}**."
+
+            spanish_datetime = now.strftime("%d/%m/%Y %H:%M:%S")
+            embed = discord.Embed(
+                title="Canal eliminado",
+                description="Un canal ha sido eliminado:",
+                color=discord.Color.green()
+            )
+            embed.set_thumbnail(url=bot_avatar_url)
+            embed.add_field(name="Fecha y hora", value=spanish_datetime, inline=True)
+            embed.add_field(name="Nombre del canal", value=f"{channel.name}", inline=True)
+            embed.add_field(name="Quién lo eliminó?", value=f"{user.name}", inline=True)
+            embed.set_footer(text="AbbyBot", icon_url=abbyBot_guild_icon)
 
         # Get logs_channel ID
         cursor.execute("SELECT logs_channel FROM server_settings WHERE guild_id = %s", (guild_id,))
@@ -65,7 +107,7 @@ class ChannelDeleteEvent(commands.Cog):
             logs_channel = self.bot.get_channel(default_channel[0])  # Get the TextChannel object
 
             if logs_channel is not None:
-                await logs_channel.send(response_message)
+                await logs_channel.send(embed=embed)
 
         # Close bd
         cursor.close()
