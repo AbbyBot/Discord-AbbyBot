@@ -240,6 +240,26 @@ def update_user_status(guild, cursor, db):
 
     db.commit()
 
+def clean_disconnected_servers(cursor, db, active_guild_ids):
+    # Get all servers registered in the database
+    cursor.execute("SELECT guild_id FROM server_settings")
+    registered_guilds = cursor.fetchall()
+    
+    for (guild_id,) in registered_guilds:
+        if guild_id not in active_guild_ids:
+            # If the server is not on the servers where the bot is active, we delete the data from the DB
+            try:
+                # Clear server related logs
+                cursor.execute("DELETE FROM mention_counter WHERE user_server = %s", (guild_id,))
+                cursor.execute("DELETE FROM user_roles WHERE guild_id = %s", (guild_id,))
+                cursor.execute("DELETE FROM dashboard WHERE guild_id = %s", (guild_id,))
+                cursor.execute("DELETE FROM server_settings WHERE guild_id = %s", (guild_id,))
+                db.commit()
+                print(f"\033[32mServer with guild_id {guild_id} has been removed from the database.\033[0m")
+            except Exception as e:
+                db.rollback()
+                print(f"\033[31mError removing server {guild_id}: {e}\033[0m")
+
 
 # Discord bot setup
 bot = commands.Bot(command_prefix='abbybot_', intents=discord.Intents.all())
@@ -254,15 +274,15 @@ async def on_ready():
     with get_db_connection() as db:
         cursor = db.cursor()
         ensure_tables_exist(cursor)
+
+        # Get IDs of the servers where the bot is currently
+        active_guild_ids = {guild.id for guild in bot.guilds}
+        
+        # Delete servers data that are no longer active
+        clean_disconnected_servers(cursor, db, active_guild_ids)
         
         # Loop through all guilds that the bot is a member of
         for guild in bot.guilds:
-            # Fetch the stored icon URL from the database
-            cursor.execute("SELECT guild_icon_url FROM server_settings WHERE guild_id = %s", (guild.id,))
-            result = cursor.fetchone()
-
-            random_avatar = random.randint(1, 5)
-            guild_icon_url = str(guild.icon.url) if guild.icon else f'https://cdn.discordapp.com/embed/avatars/{random_avatar}.png'
 
             # Register the server and update user statuses
             register_server(guild, cursor, db)
