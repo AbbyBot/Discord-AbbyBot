@@ -466,7 +466,6 @@ async def on_guild_join(guild):
         register_server(guild, cursor, db)
         print("\033[32m" + "Joined and registered new server: " + guild.name + "\033[0m")
 
-
 @bot.event
 async def on_member_update(before, after):
     guild_id = after.guild.id
@@ -476,7 +475,7 @@ async def on_member_update(before, after):
     before_roles = set(before.roles)
     after_roles = set(after.roles)
 
-    # Compare previous roles with new ones
+    # Compare old roles with new ones
     added_roles = after_roles - before_roles
     removed_roles = before_roles - after_roles
 
@@ -485,7 +484,7 @@ async def on_member_update(before, after):
 
         # If there are added roles
         for role in added_roles:
-            if not role.is_default():  # Ignore the default "Everyone" role
+            if not role.is_default():  # Ignore the default role "Everyone"
                 cursor.execute("""
                     INSERT INTO user_roles (guild_id, user_profile_id, role_id, role_name) 
                     VALUES (%s, (SELECT id FROM user_profile WHERE user_id = %s), %s, %s)
@@ -496,7 +495,7 @@ async def on_member_update(before, after):
 
         # If there are deleted roles
         for role in removed_roles:
-            if not role.is_default():  # Ignore the default "Everyone" role
+            if not role.is_default():  # Ignore the default role "Everyone"
                 cursor.execute("""
                     DELETE FROM user_roles 
                     WHERE guild_id = %s AND user_profile_id = (SELECT id FROM user_profile WHERE user_id = %s) AND role_id = %s
@@ -504,6 +503,28 @@ async def on_member_update(before, after):
                     (guild_id, user_id, role.id)
                 )
                 db.commit()
+
+        # Check if nickname changed
+        if before.display_name != after.display_name:
+            before_nick = before.display_name if before.display_name else before.name
+            after_nick = after.display_name if after.display_name else after.name
+
+            
+            cursor.execute("""
+                UPDATE dashboard 
+                SET user_server_nickname = %s 
+                WHERE user_profile_id = (SELECT id FROM user_profile WHERE user_id = %s AND guild_id = %s)
+                """, (after_nick, user_id, guild_id))
+            db.commit()
+
+            
+            print("\033[34m" + "Nickname from " + "\033[31m" + before_nick + "\033[34m" + " changed to " + "\033[32m" + after_nick + "\033[34m" + " on server " + after.guild.name + "." + "\033[0m")
+
+    # Print logic for added and removed roles
+    if added_roles:
+        print("\033[34m" + "Roles added to " + "\033[32m" + after.name + "\033[34m" + ": " + "\033[32m" + str([role.name for role in added_roles]) + "\033[0m")
+    if removed_roles:
+        print("\033[34m" + "Roles removed from " + "\033[32m" + after.name + "\033[34m" + ": " + "\033[31m" + str([role.name for role in removed_roles]) + "\033[0m")
 
 
 # Signal handler to capture Ctrl+C and notify offline
