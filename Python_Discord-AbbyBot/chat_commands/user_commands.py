@@ -236,3 +236,71 @@ class UserCommands(commands.GroupCog, name="user"):
 
         cursor.close()
         db.close()
+
+    @app_commands.command(name="avatar", description="Get user avatar")
+    @app_commands.describe(member="The user you want to get their avatar.")
+    async def user_info(self, interaction: discord.Interaction, member: discord.Member = None):
+
+        if member is None:
+            member = interaction.user
+
+        db = mysql.connector.connect(
+            host=os.getenv("DB_HOST"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            database=os.getenv("DB_NAME")
+        )
+        cursor = db.cursor()
+
+        bot_id = 1028065784016142398  # AbbyBot ID
+        guild_id = interaction.guild_id
+
+        # Fetching the user's profile to access the banner
+        user = await self.bot.fetch_user(member.id)
+
+        cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
+        result = cursor.fetchone()
+
+        if result is None:
+            await interaction.response.send_message("This server is not registered. Please contact the admin.", ephemeral=True)
+            cursor.close()
+            db.close()
+            return
+
+        language_id = result[0]  # The language ID from the query
+
+        if user.avatar:
+            # If the user has a avatar, send the avatar URL
+            avatar_url = user.avatar.url
+            if language_id == 1:
+                embed = discord.Embed(
+                    title=f"{member.display_name}'s Avatar",
+                    color=discord.Color.blue()
+                )
+                embed.set_image(url=avatar_url)
+                embed.add_field(name="Look at that awesome avatar!", value='\u200b', inline=True)
+            elif language_id == 2:
+                embed = discord.Embed(
+                    title=f"Avatar de {member.display_name}",
+                    color=discord.Color.blue()
+                )
+                embed.set_image(url=avatar_url)
+                embed.add_field(name="¡Miren ese increíble avatar!", value='\u200b', inline=True)
+        else:
+            # If the user doesn't have a avatar
+            if language_id == 1:
+                await interaction.response.send_message(f"{member.display_name} does not have a avatar. Please try another user.", ephemeral=True)
+            elif language_id == 2:
+                await interaction.response.send_message(f"{member.display_name} no tiene un avatar. Por favor, prueba con otro usuario.", ephemeral=True)
+            cursor.close()
+            db.close()
+            return  # End the command if there's no avatar
+
+        # Adding the footer and sending the embed
+        bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
+        embed.set_footer(text="AbbyBot", icon_url=bot_avatar_url)
+
+        await interaction.response.send_message(embed=embed)
+
+        cursor.close()
+        db.close()
