@@ -14,41 +14,6 @@ class UserCommands(commands.GroupCog, name="user"):
     def __init__(self, bot):
         self.bot = bot
 
-    async def check_user_is_active(self, interaction, user_id):
-        # Connect to the database
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
-
-        # Check if the user is active (is_active = 1) or inactive (is_active = 0)
-        cursor.execute("SELECT is_active FROM user_profile WHERE user_id = %s;", (user_id,))
-        result = cursor.fetchone()
-
-        # Close the database connection
-        cursor.close()
-        db.close()
-
-        if result is None:
-            await interaction.response.send_message("User not found in the database.", ephemeral=True)
-            return False
-        elif result[0] == 0:
-            try:
-                # Send an embed and notify the user
-                embed, file = account_inactive_embed()
-                await interaction.user.send(embed=embed, file=file)
-            except discord.Forbidden:
-                print(f"Could not send DM to {interaction.user}. They may have DMs disabled.")
-
-            await interaction.response.send_message(
-                "Request Rejected: Your account has been listed as **inactive** in the AbbyBot system, please check your DM.",
-                ephemeral=True)
-            return False
-        return True
-
     @app_commands.command(name="info", description="Get user information")
     @app_commands.describe(member="The user you want to get information about")
     async def user_info(self, interaction: discord.Interaction, member: discord.Member = None):
@@ -202,3 +167,72 @@ class UserCommands(commands.GroupCog, name="user"):
         cursor.close()
         db.close()
 
+
+
+    @app_commands.command(name="banner", description="Get user banner")
+    @app_commands.describe(member="The user you want to get their banner.")
+    async def user_info(self, interaction: discord.Interaction, member: discord.Member = None):
+
+        if member is None:
+            member = interaction.user
+
+        db = mysql.connector.connect(
+            host=os.getenv("DB_HOST"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            database=os.getenv("DB_NAME")
+        )
+        cursor = db.cursor()
+
+        bot_id = 1028065784016142398  # AbbyBot ID
+        guild_id = interaction.guild_id
+
+        # Fetching the user's profile to access the banner
+        user = await self.bot.fetch_user(member.id)
+
+        cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
+        result = cursor.fetchone()
+
+        if result is None:
+            await interaction.response.send_message("This server is not registered. Please contact the admin.", ephemeral=True)
+            cursor.close()
+            db.close()
+            return
+
+        language_id = result[0]  # The language ID from the query
+
+        if user.banner:
+            # If the user has a banner, send the banner URL
+            banner_url = user.banner.url
+            if language_id == 1:
+                embed = discord.Embed(
+                    title=f"{member.display_name}'s Banner",
+                    color=discord.Color.blue()
+                )
+                embed.set_image(url=banner_url)
+                embed.add_field(name="What a pretty banner, huh?", value='\u200b', inline=True)
+            elif language_id == 2:
+                embed = discord.Embed(
+                    title=f"Banner de {member.display_name}",
+                    color=discord.Color.blue()
+                )
+                embed.set_image(url=banner_url)
+                embed.add_field(name="Pero que banner más bonito, huh?", value='\u200b', inline=True)
+        else:
+            # If the user doesn't have a banner
+            if language_id == 1:
+                await interaction.response.send_message(f"{member.display_name} does not have a banner. Please try another user.", ephemeral=True)
+            elif language_id == 2:
+                await interaction.response.send_message(f"{member.display_name} no tiene un banner. Por favor, prueba con otro usuario.", ephemeral=True)
+            cursor.close()
+            db.close()
+            return  # End the command if there's no banner
+
+        # Adding the footer and sending the embed
+        bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
+        embed.set_footer(text="AbbyBot", icon_url=bot_avatar_url)
+
+        await interaction.response.send_message(embed=embed)
+
+        cursor.close()
+        db.close()
