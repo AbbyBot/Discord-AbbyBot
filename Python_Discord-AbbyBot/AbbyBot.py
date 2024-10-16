@@ -148,8 +148,8 @@ def register_members(guild, cursor, db):
         # Get user created_at date
         account_created_at = member.created_at
 
-        # Obtain the user's nickname on the server, if they do not have a nickname, use the username
-        user_server_nickname = member.nick if member.nick else member.name
+        # Obtain the user's display_name on the server, if they do not have a nickname, use the username
+        user_server_nickname = member.display_name if member.display_name else member.name
 
         # Register or update user in user_profile (global data)
         cursor.execute("SELECT id FROM user_profile WHERE user_id = %s", (member.id,))

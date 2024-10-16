@@ -154,6 +154,7 @@ CREATE TABLE IF NOT EXISTS `privileges` (
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB COMMENT = 'Stores privilege levels for users with XP multipliers and exclusive benefits.';
 
+DROP TABLE IF EXISTS `user_levels`;
 
 CREATE TABLE user_levels (
     level_id INT PRIMARY KEY,
@@ -162,6 +163,8 @@ CREATE TABLE user_levels (
     xp_bonus DECIMAL(3,2),      -- XP bonus upon reaching this level (ex: 1.5x XP per level)
     reward_description VARCHAR(255) -- Description of the reward for reaching this level
 );
+
+DROP TABLE IF EXISTS `xp_history`;
 
 CREATE TABLE xp_history (
     history_id BIGINT AUTO_INCREMENT PRIMARY KEY,
