@@ -1,8 +1,16 @@
 import discord
 import os
+from utils.utils import get_bot_avatar
 
-def account_inactive_embed():
-    """Returns an embed message for inactive accounts with an image."""
+bot_id = 1028065784016142398
+
+
+async def account_inactive_embed(bot: discord.Client):
+    """Returns an embed message for inactive accounts with an image and bot avatar in the footer."""
+    
+    # Get the bot avatar URL
+    bot_avatar_url = await get_bot_avatar(bot, bot_id)
+    
     embed = discord.Embed(
         title="Account Inactive Notice",
         description=(
@@ -18,18 +26,18 @@ def account_inactive_embed():
     # Load the image file
     image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "images", "user", "abbybot-user_inactive.png")
     
-    # Verificar si el archivo existe
+    # Check if the file exists
     if not os.path.exists(image_path):
         print(f"Error: Image {image_path} not found.")
     
-    # Crear el archivo de Discord para adjuntar
+    # Create the Discord file to attach
     file = discord.File(image_path, filename="abbybot-user_inactive.png")
     
-    # Añadir la imagen al embed usando el archivo adjunto
+    # Add the image to the embed using the attachment
     embed.set_image(url="attachment://abbybot-user_inactive.png")
     
-    # Añadir pie de página
-    embed.set_footer(text="Thank you for your understanding.")
+    # Add footer with bot avatar
+    embed.set_footer(text="AbbyBot. Thank you for your understanding.", icon_url=bot_avatar_url)
     
-    # Devolver el embed y el archivo para adjuntar
+    # Return the embed and the file to attach
     return embed, file

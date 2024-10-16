@@ -30,7 +30,6 @@ class UserCommands(commands.GroupCog, name="user"):
 
         bot_id = 1028065784016142398  # AbbyBot ID
 
-
         guild_id = interaction.guild_id
 
         cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
@@ -43,6 +42,45 @@ class UserCommands(commands.GroupCog, name="user"):
             return
 
         language_id = result[0]  # The language ID from the query
+
+
+        # Check if the user executing the command (interaction.user) is active or inactive
+        user_id = interaction.user.id  
+        cursor.execute("SELECT is_active FROM user_profile WHERE user_id = %s;", (user_id,))
+        result = cursor.fetchone()
+
+        if result is None:
+            await interaction.response.send_message("User not found in the database.", ephemeral=True)
+            cursor.close()
+            db.close()
+            return
+        
+        is_active = result[0]
+
+        # If the person executing the command is inactive, send the DM to interaction.user
+        if is_active == 0:
+            try:
+                # Get the embed and file for inactive users
+                embed_inactive, file_inactive = await account_inactive_embed(self.bot)
+
+                # Send embed to dm
+                await interaction.user.send(embed=embed_inactive, file=file_inactive)
+                
+                print(f"User {interaction.user} is inactive and notified.")
+            except discord.Forbidden:
+                print(f"Could not send DM to {interaction.user}. They may have DMs disabled.")
+            
+            
+            cursor.close()
+            db.close()
+
+            # Notify user is inactive
+            await interaction.response.send_message(
+                "Request Rejected: Your account has been listed as **inactive** in the AbbyBot system, please check your DM.",
+                ephemeral=True
+            )
+            return
+        
 
         # Query to get user information from the database, joining with user_profile
         user_info_query = """
@@ -201,6 +239,45 @@ class UserCommands(commands.GroupCog, name="user"):
 
         language_id = result[0]  # The language ID from the query
 
+
+    # Check if the user executing the command (interaction.user) is active or inactive
+        user_id = interaction.user.id  
+        cursor.execute("SELECT is_active FROM user_profile WHERE user_id = %s;", (user_id,))
+        result = cursor.fetchone()
+
+        if result is None:
+            await interaction.response.send_message("User not found in the database.", ephemeral=True)
+            cursor.close()
+            db.close()
+            return
+        
+        is_active = result[0]
+
+        # If the person executing the command is inactive, send the DM to interaction.user
+        if is_active == 0:
+            try:
+                # Get the embed and file for inactive users
+                embed_inactive, file_inactive = await account_inactive_embed(self.bot)
+
+                # Send embed to dm
+                await interaction.user.send(embed=embed_inactive, file=file_inactive)
+                
+                print(f"User {interaction.user} is inactive and notified.")
+            except discord.Forbidden:
+                print(f"Could not send DM to {interaction.user}. They may have DMs disabled.")
+            
+            
+            cursor.close()
+            db.close()
+
+            # Notify user is inactive
+            await interaction.response.send_message(
+                "Request Rejected: Your account has been listed as **inactive** in the AbbyBot system, please check your DM.",
+                ephemeral=True
+            )
+            return
+
+
         if user.banner:
             # If the user has a banner, send the banner URL
             banner_url = user.banner.url
@@ -242,7 +319,7 @@ class UserCommands(commands.GroupCog, name="user"):
     async def user_info(self, interaction: discord.Interaction, member: discord.Member = None):
 
         if member is None:
-            member = interaction.user
+            member = interaction.user  
 
         db = mysql.connector.connect(
             host=os.getenv("DB_HOST"),
@@ -269,8 +346,45 @@ class UserCommands(commands.GroupCog, name="user"):
 
         language_id = result[0]  # The language ID from the query
 
+        # Check if the user executing the command (interaction.user) is active or inactive
+        user_id = interaction.user.id  
+        cursor.execute("SELECT is_active FROM user_profile WHERE user_id = %s;", (user_id,))
+        result = cursor.fetchone()
+
+        if result is None:
+            await interaction.response.send_message("User not found in the database.", ephemeral=True)
+            cursor.close()
+            db.close()
+            return
+        
+        is_active = result[0]
+
+        # If the person executing the command is inactive, send the DM to interaction.user
+        if is_active == 0:
+            try:
+                # Get the embed and file for inactive users
+                embed_inactive, file_inactive = await account_inactive_embed(self.bot)
+
+                # Send embed to dm
+                await interaction.user.send(embed=embed_inactive, file=file_inactive)
+                
+                print(f"User {interaction.user} is inactive and notified.")
+            except discord.Forbidden:
+                print(f"Could not send DM to {interaction.user}. They may have DMs disabled.")
+            
+            
+            cursor.close()
+            db.close()
+
+            # Notify user is inactive
+            await interaction.response.send_message(
+                "Request Rejected: Your account has been listed as **inactive** in the AbbyBot system, please check your DM.",
+                ephemeral=True
+            )
+            return
+
+        # Then create embed
         if user.avatar:
-            # If the user has a avatar, send the avatar URL
             avatar_url = user.avatar.url
             if language_id == 1:
                 embed = discord.Embed(
@@ -287,16 +401,15 @@ class UserCommands(commands.GroupCog, name="user"):
                 embed.set_image(url=avatar_url)
                 embed.add_field(name="¡Miren ese increíble avatar!", value='\u200b', inline=True)
         else:
-            # If the user doesn't have a avatar
             if language_id == 1:
-                await interaction.response.send_message(f"{member.display_name} does not have a avatar. Please try another user.", ephemeral=True)
+                await interaction.response.send_message(f"{member.display_name} does not have an avatar. Please try another user.", ephemeral=True)
             elif language_id == 2:
                 await interaction.response.send_message(f"{member.display_name} no tiene un avatar. Por favor, prueba con otro usuario.", ephemeral=True)
             cursor.close()
             db.close()
-            return  # End the command if there's no avatar
+            return  # If no avatar stop command
 
-        # Adding the footer and sending the embed
+        # Footer
         bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
         embed.set_footer(text="AbbyBot", icon_url=bot_avatar_url)
 
