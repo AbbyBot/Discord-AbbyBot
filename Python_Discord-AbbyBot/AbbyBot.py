@@ -11,6 +11,8 @@ import random
 import signal
 import requests
 
+from xp_system.xp_events import add_xp, check_xp
+
 # Load dotenv variables
 load_dotenv()
 
@@ -367,7 +369,7 @@ def notify_api_status(status):
 async def on_message(message):
     if message.author.bot:
         return
-    # If message is DM
+
     if isinstance(message.channel, discord.DMChannel):
         embed = discord.Embed(
             title="Greetings!",
@@ -377,7 +379,6 @@ async def on_message(message):
         embed.set_footer(text="AbbyBot Project - Always here to help.")
         await message.channel.send(embed=embed)
     else:
-        # handle regular messages on servers
         guild_id = message.guild.id
         with get_db_connection() as db:
             cursor = db.cursor()
@@ -390,6 +391,14 @@ async def on_message(message):
             if message.content.startswith(prefix):
                 await message.channel.send(f"Prefix detected! The prefix for this server is: `{prefix}`")
                 await bot.process_commands(message)
+
+            # Add XP for sending messages, applying the XP privilege multiplier
+            user_id = message.author.id
+            add_xp(user_id, 10, "message_sent", cursor, db)
+
+        await bot.process_commands(message)
+
+
 
 @bot.event
 async def on_guild_update(before, after):

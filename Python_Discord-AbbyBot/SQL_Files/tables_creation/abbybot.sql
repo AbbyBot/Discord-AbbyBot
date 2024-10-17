@@ -191,6 +191,8 @@ CREATE TABLE IF NOT EXISTS `user_profile` (
     `user_privilege` INT NOT NULL DEFAULT 1,
     `account_created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
     `theme_id` INT NOT NULL DEFAULT 1, -- Abby-Theme default 1
+    `xp_total` BIGINT NOT NULL DEFAULT 0,
+    `level` INT DEFAULT 1,
     PRIMARY KEY (`id`),
     UNIQUE (`user_id`),
     CONSTRAINT `fk_user_privilege` FOREIGN KEY (`user_privilege`) REFERENCES `privileges` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
@@ -303,36 +305,36 @@ VALUES
         2,
         'Cool Users 🎉',
         2,
-        'Users who have reached 5,000 XP. They gain an XP boost and access to exclusive commands.',
+        'Users who have reached 5,000 XP. They gain a slight XP boost and access to exclusive commands.',
         'Earn 5,000 XP to unlock this role.',
-        1.5,
+        1.3, -- Adjusted to 1.3 for more balanced progress
         'TBA'
     ),
     (
         3,
         'Wishlist Users 📜',
         3,
-        'Users who have added AbbyBot to their wishlist. They get 2.0 XP and have special privileges. Limited until December 2024.',
+        'Users who have added AbbyBot to their wishlist. They get an XP boost and have special privileges. Limited until December 2024.',
         'Add AbbyBot to your wishlist before December 2024 to unlock this role.',
-        2.0,
+        1.5, -- Adjusted to 1.5 to avoid excessive boost
         'TBA'
     ),
     (
         4,
         'Neo Delta Resistance ⚔️',
         4,
-        'Users who have reached 20,000 XP. They earn a higher XP boost of 3.3 XP and can access high-level exclusive content.',
+        'Users who have reached 20,000 XP. They earn a higher XP boost and can access high-level exclusive content.',
         'Earn 20,000 XP to unlock this elite role.',
-        3.3,
+        2.3, -- Adjusted to 2.3 to reward effort without imbalance
         'TBA'
     ),
     (
         5,
         'AbbyBot Contributors 🛠️',
         5,
-        'Programmers and developers who have worked on building AbbyBot. They earn 4.0 XP and can help shape the future of AbbyBot.',
+        'Programmers and developers who have worked on building AbbyBot. They earn an XP boost and can help shape the future of AbbyBot.',
         'Contribute code or design to AbbyBot to gain this exclusive role.',
-        4.0,
+        3.0, -- Adjusted to 3.0 to reward without overdoing it
         'TBA'
     ),
     (
@@ -341,10 +343,20 @@ VALUES
         6,
         'The project leaders and highest-ranking members. They have no XP advantage but possess total control over AbbyBot.',
         'Reserved for the project owners and leaders with admin-level control.',
-        1.0,
+        1.0, -- No XP extra
         'TBA'
     );
 
+
+INSERT INTO user_levels (level_id, level, xp_required, xp_bonus, reward_description)
+VALUES 
+(1, 1, 0, 1.0, 'No rewards'),
+(2, 2, 100, 1.0, 'No rewards'),
+(3, 3, 500, 1.1, 'Unlocks exclusive command'),
+(4, 4, 1000, 1.2, 'Unlocks special title'),
+(5, 5, 2500, 1.3, 'Unlocks special profile icon'),
+(6, 6, 5000, 1.5, 'Unlocks special server role'),
+(7, 7, 10000, 2.0, 'Access to VIP events');
 
 SET SQL_MODE = @OLD_SQL_MODE;
 
