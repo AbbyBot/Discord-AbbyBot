@@ -209,7 +209,7 @@ class UserCommands(commands.GroupCog, name="user"):
 
     @app_commands.command(name="banner", description="Get user banner")
     @app_commands.describe(member="The user you want to get their banner.")
-    async def user_info(self, interaction: discord.Interaction, member: discord.Member = None):
+    async def user_banner(self, interaction: discord.Interaction, member: discord.Member = None):
 
         if member is None:
             member = interaction.user
@@ -316,7 +316,7 @@ class UserCommands(commands.GroupCog, name="user"):
 
     @app_commands.command(name="avatar", description="Get user avatar")
     @app_commands.describe(member="The user you want to get their avatar.")
-    async def user_info(self, interaction: discord.Interaction, member: discord.Member = None):
+    async def user_avatar(self, interaction: discord.Interaction, member: discord.Member = None):
 
         if member is None:
             member = interaction.user  
