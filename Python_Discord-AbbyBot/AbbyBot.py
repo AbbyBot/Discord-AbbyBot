@@ -70,6 +70,12 @@ from event_commands.members.on_member_update import MemberUpdateEvent
 
 # APIs commands import
 from api_commands.image_commands import ImageCommands
+
+
+# Premium commands
+
+from premium_commands.music_player import MusicPlayer
+
 # Establish MySQL connection
 def get_db_connection():
     return mysql.connector.connect(**db_config)
@@ -331,7 +337,7 @@ async def on_ready():
 
     await bot.add_cog(MemberUpdateEvent(bot))
     
-
+    await bot.add_cog(MusicPlayer(bot))
 
     try:
         synced_commands = await bot.tree.sync()

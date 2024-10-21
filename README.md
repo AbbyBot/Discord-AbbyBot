@@ -31,6 +31,7 @@ AbbyBot is an application for Discord (BOT) designed by <a href="https://reyesan
 - **Events system:** AbbyBot has an event system where it will respond to the user in different ways if they do a specific thing, such as mentioning it or deleting messages. This system can be disabled by the administrator.
 - **Administration system:** `(W.I.P)` is currently still considered a work in development, but will be implemented very soon in its initial phase.
 - **Random dialogues:** AbbyBot speaks different words in different languages, has different dialogues in order to attract the user's attention. 
+- **Music player:** This command is acclaimed by many for sure, but at the same time it is a risk factor, a command to play .mp3 files in the bot.
 - **'Abigail':** One of AbbyBot's objectives is to present "her" character, each dialogue she has has some story to tell.
 
 ## Installation (Development)
@@ -113,7 +114,69 @@ Repository Root
 ```
 Here, in short, the same thing is repeated, you must open any .SQL script (regardless of the order) and execute it so that the data is inserted, try to do it only once since the tables are auto-incrementing and duplicate data could be generated.
 
-The important thing is that ALL the .SQL files are executed
+The important thing is that ALL the .SQL files are execute
+
+### Install FFmpeg
+
+AbbyBot requires **FFmpeg** to process and play audio files. Follow the instructions below based on your operating system.
+
+#### Installing FFmpeg
+
+- **On Windows:**
+  
+  1. Download FFmpeg from the official site: [FFmpeg - Windows builds](https://ffmpeg.org/download.html).
+  2. Extract the downloaded zip file to a folder (e.g., `C:\ffmpeg\`).
+  3. Add FFmpeg to your system's PATH:
+     - Open **Settings** > **System** > **About** > **Advanced system settings**.
+     - Click **Environment Variables**.
+     - Under **System Variables**, find **Path**.
+     - Click **Edit** and then **New**. Add the path to the `bin` folder of FFmpeg (e.g., `C:\ffmpeg\bin`).
+     - Save the changes and close the settings window.
+  4. To verify the installation, open a command prompt and run:
+     ```bash
+     ffmpeg -version
+     ```
+
+- **On Linux:**
+  
+  FFmpeg can be installed directly from the package manager on most Linux distributions:
+
+  - **Debian/Ubuntu-based distributions:**
+    ```bash
+    sudo apt update
+    sudo apt install ffmpeg
+    ```
+
+  - **Fedora/RHEL-based distributions:**
+    ```bash
+    sudo dnf install ffmpeg
+    ```
+
+  - **Arch Linux:**
+    ```bash
+    sudo pacman -S ffmpeg
+    ```
+
+  After installing FFmpeg, you can verify the installation by running:
+  ```bash
+  ffmpeg -version
+  ```
+
+- **On macOS:**
+  
+  You can install FFmpeg using **Homebrew**:
+
+  ```bash
+  brew install ffmpeg
+  ```
+
+  After installation, check the version:
+
+  ```bash
+  ffmpeg -version
+  ```
+
+
 
 -Finally, the database will be ready.
 
