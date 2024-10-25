@@ -295,6 +295,37 @@ async def on_ready():
             # Register the server and update user statuses
             register_server(guild, cursor, db)
             update_user_status(guild, cursor, db)
+            
+            # Check and update name and icon when starting the bot
+            cursor.execute("SELECT guild_name, guild_icon_url FROM server_settings WHERE guild_id = %s", (guild.id,))
+            result = cursor.fetchone()
+            
+            if result:
+                stored_name, stored_icon_url = result
+                
+                # Compare and update server name
+                if guild.name != stored_name:
+                    cursor.execute("""
+                        UPDATE server_settings 
+                        SET guild_name = %s 
+                        WHERE guild_id = %s
+                    """, (guild.name, guild.id))
+                    print(f"\033[34mUpdated server name for guild ID {guild.id} to '{guild.name}'\033[0m")
+
+                # Get Icon URL or default URL
+                random_avatar = random.randint(1, 5)
+                current_icon_url = str(guild.icon.url) if guild.icon else f'https://cdn.discordapp.com/embed/avatars/{random_avatar}.png'
+
+                # Compare and change photo
+                if current_icon_url != stored_icon_url:
+                    cursor.execute("""
+                        UPDATE server_settings 
+                        SET guild_icon_url = %s, guild_icon_last_updated = %s 
+                        WHERE guild_id = %s
+                    """, (current_icon_url, datetime.now(), guild.id))
+                    print(f"\033[34mUpdated server icon for guild ID {guild.id}\033[0m")
+
+            db.commit()
 
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.watching, 
@@ -344,6 +375,7 @@ async def on_ready():
         print(f"Successfully synced {len(synced_commands)} commands.")
     except Exception as e:
         print(f"An error occurred while syncing commands: {e}")
+
 
 
 
@@ -408,11 +440,21 @@ async def on_message(message):
 
 @bot.event
 async def on_guild_update(before, after):
-    # Check if the icon has changed
-    if before.icon != after.icon:
-        with get_db_connection() as db:
-            cursor = db.cursor()
-            # Call a function to update the server icon
+    with get_db_connection() as db:
+        cursor = db.cursor()
+        
+        # Check is server name changed
+        if before.name != after.name:
+            cursor.execute("""
+                UPDATE server_settings 
+                SET guild_name = %s 
+                WHERE guild_id = %s
+            """, (after.name, after.id))
+            db.commit()
+            print(f"\033[34mServer name updated to '{after.name}' for guild ID {after.id}\033[0m")
+        
+        # Check icon change
+        if before.icon != after.icon:
             update_server_icon(after, cursor, db)
 
 
