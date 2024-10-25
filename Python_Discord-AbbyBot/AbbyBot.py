@@ -382,7 +382,10 @@ async def on_ready():
 def notify_api_status(status):
     try:
         # API URL
-        api_url = os.getenv("API_URL")  
+        api_url = os.getenv("API_URL")
+        if not api_url:
+            print("\033[31mAPI URL not found. Check your environment variables.\033[0m")
+            return
 
         # Data to be sent to the API
         data = {"status": status}
