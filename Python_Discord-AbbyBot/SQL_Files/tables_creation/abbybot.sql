@@ -253,6 +253,8 @@ DROP TABLE IF EXISTS `AbbyBot_Themes`;
 CREATE TABLE IF NOT EXISTS `AbbyBot_Themes` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `title` VARCHAR(100) NOT NULL,
+    `theme_code` VARCHAR(50) NOT NULL,
+    `theme_class` VARCHAR(50) NOT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB COMMENT = 'Stores available themes for AbbyBot customization.';
 
