@@ -27,20 +27,9 @@ class ChannelUpdateEvent(commands.Cog):
 
         guild_id = before.guild.id
 
-        # Check if the server has activated_logs = 1
-        cursor.execute("SELECT activated_logs FROM server_settings WHERE guild_id = %s", (guild_id,))
-        logs_result = cursor.fetchone()
-
-        if logs_result is None or logs_result[0] == 0:
-            # If it is not activated or there is no result, do nothing
-            cursor.close()
-            db.close()
-            return
-
         # Check server language
         cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
         result = cursor.fetchone()
-        
 
         if result is None:
             # If the server is not registered, do nothing
@@ -49,6 +38,14 @@ class ChannelUpdateEvent(commands.Cog):
             return
         language_id = result[0]
 
+        # Update channel in server_channels table
+        cursor.execute("""
+            UPDATE server_channels 
+            SET channel_title = %s 
+            WHERE guild_id = %s AND channel_id = %s
+        """, (after.name, guild_id, after.id))
+        db.commit()
+        print(f"\033[33mChannel {after.name} updated in server {before.guild.name}.\033[0m")
 
         changes = []
 

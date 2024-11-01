@@ -27,25 +27,19 @@ class ChannelDeleteEvent(commands.Cog):
 
         guild_id = channel.guild.id  # Get server ID
 
-        # Check if the server has activated_logs = 1
-        cursor.execute("SELECT activated_logs FROM server_settings WHERE guild_id = %s", (guild_id,))
-        logs_result = cursor.fetchone()
-
-        if logs_result is None or logs_result[0] == 0:
-            # If it is not activated or there is no result, do nothing
-            cursor.close()
-            db.close()
-            return
-
         # Check server language
         cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
         result = cursor.fetchone()
 
         if result is None:
-            # If the server is not registered, do nothing
             cursor.close()
             db.close()
             return
+
+        # Delete channel from server_channels table
+        cursor.execute("DELETE FROM server_channels WHERE guild_id = %s AND channel_id = %s", (guild_id, channel.id))
+        db.commit()
+        print(f"\033[31mChannel {channel.name} removed from server {channel.guild.name}.\033[0m")
 
         # Get the audit logs to find who deleted the channel
         async for entry in channel.guild.audit_logs(limit=1, action=discord.AuditLogAction.channel_delete):
@@ -63,16 +57,13 @@ class ChannelDeleteEvent(commands.Cog):
         bot_id = 1028065784016142398  # AbbyBot ID
         abbyBot_guild_icon = await get_bot_avatar(self.bot, bot_id)
 
-
         if bot_avatar_url is None or not bot_avatar_url[0].startswith("http"):
-            
             bot_avatar_url = "https://cdn.discordapp.com/embed/avatars/0.png"  
         else:
             bot_avatar_url = bot_avatar_url[0]
 
         now = datetime.now()
         if language_id == 1:
-
             english_datetime = now.strftime("%m/%d/%Y %H:%M:%S")
             embed = discord.Embed(
                 title="Channel deleted",
@@ -86,7 +77,6 @@ class ChannelDeleteEvent(commands.Cog):
             embed.set_footer(text="AbbyBot", icon_url=abbyBot_guild_icon)
 
         elif language_id == 2:
-
             spanish_datetime = now.strftime("%d/%m/%Y %H:%M:%S")
             embed = discord.Embed(
                 title="Canal eliminado",

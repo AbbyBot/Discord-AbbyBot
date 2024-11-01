@@ -235,6 +235,21 @@ CREATE TABLE IF NOT EXISTS `user_roles` (
     FOREIGN KEY (`user_profile_id`) REFERENCES `user_profile` (`id`)
 ) ENGINE = InnoDB COMMENT = 'Stores user roles per server.';
 
+-- -----------------------------------------------------
+-- Table `server_channels`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `server_channels`;
+
+CREATE TABLE IF NOT EXISTS `server_channels` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `guild_id` BIGINT NOT NULL,
+    `channel_id` BIGINT NOT NULL,
+    `channel_title` VARCHAR(255) NOT NULL,
+    PRIMARY KEY (`id`),
+    INDEX `fk_guild_id_idx` (`guild_id` ASC),
+    CONSTRAINT `fk_guild_id` FOREIGN KEY (`guild_id`) REFERENCES `server_settings` (`guild_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE = InnoDB COMMENT = 'Stores all channels of a specific server with their titles.';
+
 SET @OLD_UNIQUE_CHECKS = @@UNIQUE_CHECKS, UNIQUE_CHECKS = 0;
 
 SET

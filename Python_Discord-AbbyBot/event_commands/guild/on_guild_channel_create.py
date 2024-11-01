@@ -27,15 +27,6 @@ class ChannelCreateEvent(commands.Cog):
 
         guild_id = channel.guild.id  # Get server ID
 
-        # Check if the server has activated_logs = 1
-        cursor.execute("SELECT activated_logs FROM server_settings WHERE guild_id = %s", (guild_id,))
-        logs_result = cursor.fetchone()
-
-        if logs_result is None or logs_result[0] == 0:
-            cursor.close()
-            db.close()
-            return
-
         # Check server language
         cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
         result = cursor.fetchone()
@@ -47,6 +38,13 @@ class ChannelCreateEvent(commands.Cog):
 
         language_id = result[0]
 
+        # Insert new channel into server_channels table
+        cursor.execute("""
+            INSERT INTO server_channels (guild_id, channel_id, channel_title) 
+            VALUES (%s, %s, %s)
+        """, (guild_id, channel.id, channel.name))
+        db.commit()
+        print(f"\033[32mChannel {channel.name} added to server {channel.guild.name}.\033[0m")
 
         # Get the audit logs to find who created the channel
         async for entry in channel.guild.audit_logs(limit=1, action=discord.AuditLogAction.channel_create):
