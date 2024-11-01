@@ -25,3 +25,6 @@ __pycache__/
 # Guild images
 
 /Python_Discord-AbbyBot/images/guild_images/*
+
+# Uploads
+/Python_Discord-AbbyBot/uploads/*
