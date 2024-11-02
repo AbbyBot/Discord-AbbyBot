@@ -1,13 +1,9 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-import mysql.connector
-from dotenv import load_dotenv
-import os
 from utils.utils import get_bot_avatar
+from utils.db_utils import get_db_connection
 
-# Load dotenv variables
-load_dotenv()
 
 class ServerCommands(commands.GroupCog, name="server"):
     def __init__(self, bot):
@@ -16,14 +12,7 @@ class ServerCommands(commands.GroupCog, name="server"):
     @app_commands.command(name="info", description="Check server info.")
     async def server_info(self, interaction: discord.Interaction):
 
-        # Connect to the database with dotenv variables
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
+        db, cursor = get_db_connection()
 
         # Get guild_id from the interaction
         guild_id = interaction.guild_id

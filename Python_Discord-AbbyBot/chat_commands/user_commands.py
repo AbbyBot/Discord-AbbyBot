@@ -1,14 +1,11 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-import mysql.connector
-from dotenv import load_dotenv
-import os
 from embeds.embeds import account_inactive_embed  # import embed system
 from utils.utils import get_bot_avatar
+from utils.db_utils import get_db_connection
+import os  
 
-# Load dotenv variables
-load_dotenv()
 
 class UserCommands(commands.GroupCog, name="user"):
     def __init__(self, bot):
@@ -20,13 +17,7 @@ class UserCommands(commands.GroupCog, name="user"):
         if member is None:
             member = interaction.user
 
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
+        db, cursor = get_db_connection()
 
         bot_id = 1028065784016142398  # AbbyBot ID
 
@@ -194,9 +185,10 @@ class UserCommands(commands.GroupCog, name="user"):
             embed.add_field(name="Roles", value=roles, inline=True)
 
         bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
+        footer_text = os.getenv("FOOTER_TEXT", "AbbyBot")  
 
         embed.set_footer(
-            text="AbbyBot",  
+            text=footer_text,  
             icon_url=bot_avatar_url  
         )
 
@@ -214,13 +206,7 @@ class UserCommands(commands.GroupCog, name="user"):
         if member is None:
             member = interaction.user
 
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
+        db, cursor = get_db_connection()
 
         bot_id = 1028065784016142398  # AbbyBot ID
         guild_id = interaction.guild_id
@@ -307,7 +293,12 @@ class UserCommands(commands.GroupCog, name="user"):
 
         # Adding the footer and sending the embed
         bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
-        embed.set_footer(text="AbbyBot", icon_url=bot_avatar_url)
+        footer_text = os.getenv("FOOTER_TEXT", "AbbyBot")  
+
+        embed.set_footer(
+            text=footer_text,  
+            icon_url=bot_avatar_url  
+        )
 
         await interaction.response.send_message(embed=embed)
 
@@ -321,13 +312,7 @@ class UserCommands(commands.GroupCog, name="user"):
         if member is None:
             member = interaction.user  
 
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
+        db, cursor = get_db_connection()
 
         bot_id = 1028065784016142398  # AbbyBot ID
         guild_id = interaction.guild_id
@@ -411,7 +396,12 @@ class UserCommands(commands.GroupCog, name="user"):
 
         # Footer
         bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
-        embed.set_footer(text="AbbyBot", icon_url=bot_avatar_url)
+        footer_text = os.getenv("FOOTER_TEXT", "AbbyBot")  
+
+        embed.set_footer(
+            text=footer_text,  
+            icon_url=bot_avatar_url  
+        )
 
         await interaction.response.send_message(embed=embed)
 
@@ -425,13 +415,7 @@ class UserCommands(commands.GroupCog, name="user"):
         if member is None:
             member = interaction.user  
 
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
+        db, cursor = get_db_connection()
 
         bot_id = 1028065784016142398  # AbbyBot ID
         guild_id = interaction.guild_id
@@ -515,7 +499,12 @@ class UserCommands(commands.GroupCog, name="user"):
 
         # Footer
         bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
-        embed.set_footer(text="AbbyBot", icon_url=bot_avatar_url)
+        footer_text = os.getenv("FOOTER_TEXT", "AbbyBot")  
+
+        embed.set_footer(
+            text=footer_text,  
+            icon_url=bot_avatar_url  
+        )
 
         await interaction.response.send_message(embed=embed)
 

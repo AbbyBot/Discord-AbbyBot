@@ -1,12 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-import mysql.connector
-from dotenv import load_dotenv
-import os
-
-# Load dotenv variables
-load_dotenv()
+from utils.db_utils import get_db_connection
 
 class TellHistory(commands.Cog):
     def __init__(self, bot):
@@ -22,14 +17,7 @@ class TellHistory(commands.Cog):
     )
     async def tell_history(self, interaction: discord.Interaction, category: app_commands.Choice[str]):
 
-        # Connect to database with dotenv variables
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
+        db, cursor = get_db_connection()
 
         # Check if server is registered
         guild_id = interaction.guild_id

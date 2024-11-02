@@ -1,18 +1,11 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-import mysql.connector
-from dotenv import load_dotenv
 import os
 from embeds.embeds import account_inactive_embed
-
 from utils.utils import get_bot_avatar 
+from utils.db_utils import get_db_connection
 
-
-
-
-# Load dotenv variables
-load_dotenv()
 
 class Help(commands.Cog):
     def __init__(self, bot):
@@ -21,14 +14,7 @@ class Help(commands.Cog):
     @app_commands.command(name="help", description="Do you have any questions?")
     async def help(self, interaction: discord.Interaction):
 
-        # Connect to database with dotenv variables
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
+        db, cursor = get_db_connection()
 
         # Get guild_id and user_id from the interaction
         guild_id = interaction.guild_id

@@ -3,14 +3,11 @@ from discord import app_commands
 from discord.ext import commands
 import asyncio
 import random
-import mysql.connector
-from dotenv import load_dotenv
 import os
 import random
 from embeds.embeds import account_inactive_embed
+from utils.db_utils import get_db_connection
 
-# Load dotenv variables
-load_dotenv()
 
 # load all .env Emojis
 emojis_str = os.getenv("EMOJIS", "")  # Get the string, default will be an empty string if not defined
@@ -32,14 +29,7 @@ class Ping(commands.Cog):
     @app_commands.command(name="ping", description="Check your latency with the server.")
     async def ping(self, interaction: discord.Interaction):
 
-        # Connect to database with dotenv variables
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
+        db, cursor = get_db_connection()
 
          # Get guild_id and user_id from the interaction
         guild_id = interaction.guild_id
