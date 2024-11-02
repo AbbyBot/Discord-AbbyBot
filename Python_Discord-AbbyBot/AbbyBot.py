@@ -2,16 +2,22 @@ import os
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
-import mysql.connector
-import sys
-import schedule
-import time
 from datetime import datetime
 import random
 import signal
-import requests
+from xp_system.xp_events import add_xp
 
-from xp_system.xp_events import add_xp, check_xp
+# utils/AbbyBot-Main functions
+from utils.AbbyBot_Main.get_db_connection import get_db_connection
+from utils.AbbyBot_Main.server_data.ensure_tables_exists import ensure_tables_exist
+from utils.AbbyBot_Main.server_data.register_server import register_server
+from utils.AbbyBot_Main.users.update_user_status import update_user_status
+from utils.AbbyBot_Main.server_data.clean_disconnected_servers import clean_disconnected_servers
+from utils.AbbyBot_Main.server_data.register_channels import register_channels
+from utils.AbbyBot_Main.API.notify_api_status import notify_api_status
+from utils.AbbyBot_Main.server_data.update_server_icon import update_server_icon
+from utils.AbbyBot_Main.API.handle_shutdown import handle_shutdown
+
 
 # Load dotenv variables
 load_dotenv()
@@ -19,22 +25,12 @@ load_dotenv()
 # Bot_token from .env
 token = os.getenv("BOT_TOKEN")
 
-# MySQL connection setup
-db_config = {
-    "host": os.getenv("DB_HOST"),
-    "user": os.getenv("DB_USER"),
-    "password": os.getenv("DB_PASSWORD"),
-    "database": os.getenv("DB_NAME")
-}
-
 # Chat commands import
 from chat_commands.ping import Ping
 from chat_commands.code import Code
 from chat_commands.help import Help
 from chat_commands.tell_history import TellHistory
 from chat_commands.server_commands import ServerCommands
-
-
 from chat_commands.user_commands import UserCommands
 
 # Settings commands import
@@ -75,198 +71,6 @@ from api_commands.image_commands import ImageCommands
 # Premium commands
 
 from premium_commands.music_player import MusicPlayer
-
-# Establish MySQL connection
-def get_db_connection():
-    return mysql.connector.connect(**db_config)
-
-# Function to restart the bot
-def restart_bot():
-    os.execv(sys.executable, ['python'] + sys.argv)
-    print("Bot is restarting...")
-
-# Scheduler to restart the bot every hour
-def schedule_restart():
-    schedule.every(2).hours.do(restart_bot)
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
-
-# Ensure necessary tables exist in the database
-def ensure_tables_exist(cursor):
-    tables = ['server_settings', 'dashboard', 'user_profile', 'mention_counter']
-    for table in tables:
-        cursor.execute(f"SHOW TABLES LIKE '{table}';")
-        if cursor.fetchone() is None:
-            print("\033[31m" + f"Table {table} does not exist. You should create it." + "\033[0m")
-        else:
-            print("\033[32m" + f"Table {table} already exists." + "\033[0m")
-
-
-
-
-
-# Function to register or update a server
-
-def register_server(guild, cursor, db):
-    # Default language (English)
-    default_language_id = 1
-    
-    cursor.execute("SELECT guild_id, guild_icon_url FROM server_settings WHERE guild_id = %s", (guild.id,))
-    result = cursor.fetchone()
-
-    # Get the Discord icon URL, and use a default URL if there is no icon
-    random_avatar = random.randint(1, 5)
-    guild_icon_url = str(guild.icon.url) if guild.icon else f'https://cdn.discordapp.com/embed/avatars/{random_avatar}.png'
-    
-    if result is None:
-        # Register the server for the first time
-        cursor.execute("""
-            INSERT INTO server_settings 
-            (guild_id, guild_name, owner_id, member_count, prefix, guild_language, guild_icon_url, guild_icon_last_updated) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """, 
-            (guild.id, guild.name, guild.owner.id, guild.member_count, 'abbybot_', default_language_id, guild_icon_url, datetime.now())
-        )
-        print("\033[32m" + f"Server {guild.name} registered." + "\033[0m")
-    else:
-        # If the server is already registered, update only if the icon URL has changed
-        stored_icon_url = result[1]  # URL in bd
-        if guild_icon_url != stored_icon_url:
-            cursor.execute("""
-                UPDATE server_settings 
-                SET guild_name = %s, owner_id = %s, member_count = %s, guild_icon_url = %s, guild_icon_last_updated = %s
-                WHERE guild_id = %s
-                """, 
-                (guild.name, guild.owner.id, guild.member_count, guild_icon_url, datetime.now(), guild.id)
-            )
-            print("\033[33m" + f"Server {guild.name} updated." + "\033[0m") 
-    
-    db.commit()
-    # Register or update server members
-    register_members(guild, cursor, db)
-
-
-
-def register_members(guild, cursor, db):
-    for member in guild.members:
-        is_bot = 1 if member.bot else 0
-        is_admin = 1 if member.guild_permissions.administrator else 0
-
-        # Get user created_at date
-        account_created_at = member.created_at
-
-        # Obtain the user's display_name on the server, if they do not have a nickname, use the username
-        user_server_nickname = member.display_name if member.display_name else member.name
-
-        # Register or update user in user_profile (global data)
-        cursor.execute("SELECT id FROM user_profile WHERE user_id = %s", (member.id,))
-        user_profile = cursor.fetchone()
-
-        if user_profile is None:
-            # Insert new user into user_profile if not exists
-            cursor.execute("""
-                INSERT INTO user_profile 
-                (user_id, user_username, account_created_at, user_privilege) 
-                VALUES (%s, %s, %s, 1)
-                """, 
-                (member.id, member.name, account_created_at)
-            )
-            db.commit()
-
-            # Retrieve the new user_profile_id
-            cursor.execute("SELECT id FROM user_profile WHERE user_id = %s", (member.id,))
-            user_profile = cursor.fetchone()
-
-        user_profile_id = user_profile[0]
-
-        # Register or update member data in dashboard (server-specific data)
-        cursor.execute("SELECT id FROM dashboard WHERE guild_id = %s AND user_profile_id = %s", (guild.id, user_profile_id))
-        if cursor.fetchone() is None:
-            cursor.execute("""
-                INSERT INTO dashboard 
-                (guild_id, user_profile_id, is_bot, is_admin, user_server_nickname) 
-                VALUES (%s, %s, %s, %s, %s)
-                """, 
-                (guild.id, user_profile_id, is_bot, is_admin, user_server_nickname)
-            )
-        else:
-            cursor.execute("""
-                UPDATE dashboard 
-                SET is_bot = %s, is_admin = %s, user_server_nickname = %s
-                WHERE guild_id = %s AND user_profile_id = %s
-                """, 
-                (is_bot, is_admin, user_server_nickname, guild.id, user_profile_id)
-            )
-
-        db.commit()
-        register_user_roles(guild.id, member, cursor, db)
-
-# Register or update user roles
-def register_user_roles(guild_id, member, cursor, db):
-    cursor.execute("DELETE FROM user_roles WHERE guild_id = %s AND user_profile_id = (SELECT id FROM user_profile WHERE user_id = %s)", (guild_id, member.id))
-    db.commit()
-
-    for role in member.roles:
-        if not role.is_default():
-            cursor.execute("""
-                INSERT INTO user_roles (guild_id, user_profile_id, role_id, role_name) 
-                VALUES (%s, (SELECT id FROM user_profile WHERE user_id = %s), %s, %s)
-                """, 
-                (guild_id, member.id, role.id, role.name)
-            )
-            db.commit()
-
-
-# Update user status (active/inactive) without overriding previous inactive status
-def update_user_status(guild, cursor, db):
-    # Get all registered users in the database for this server, now from `user_profile` via a join with `dashboard`
-    cursor.execute("""
-        SELECT up.user_id, up.is_active 
-        FROM user_profile up
-        JOIN dashboard d ON up.id = d.user_profile_id 
-        WHERE d.guild_id = %s
-    """, (guild.id,))
-    stored_users = cursor.fetchall()
-
-    # Create a set of current server members' user IDs
-    guild_members = {member.id for member in guild.members}
-
-    # Update the status of each user
-    for user_id, is_active in stored_users:
-        # If the user is already inactive (is_active = 0), do not change its status
-        if is_active == 0:
-            continue
-
-        # If the user is on the server, mark them as active, otherwise inactive
-        new_status = 1 if user_id in guild_members else 0
-        cursor.execute("""
-            UPDATE user_profile 
-            SET is_active = %s 
-            WHERE user_id = %s
-        """, (new_status, user_id))
-
-    db.commit()
-
-def clean_disconnected_servers(cursor, db, active_guild_ids):
-    # Get all servers registered in the database
-    cursor.execute("SELECT guild_id FROM server_settings")
-    registered_guilds = cursor.fetchall()
-    
-    for (guild_id,) in registered_guilds:
-        if guild_id not in active_guild_ids:
-            # If the server is not on the servers where the bot is active, we delete the data from the DB
-            try:
-                # Clear server related logs
-                cursor.execute("DELETE FROM mention_counter WHERE user_server = %s", (guild_id,))
-                cursor.execute("DELETE FROM user_roles WHERE guild_id = %s", (guild_id,))
-                cursor.execute("DELETE FROM dashboard WHERE guild_id = %s", (guild_id,))
-                cursor.execute("DELETE FROM server_settings WHERE guild_id = %s", (guild_id,))
-                db.commit()
-                print(f"\033[32mServer with guild_id {guild_id} has been removed from the database.\033[0m")
-            except Exception as e:
-                db.rollback()
-                print(f"\033[31mError removing server {guild_id}: {e}\033[0m")
 
 
 # Discord bot setup
@@ -379,56 +183,6 @@ async def on_ready():
     except Exception as e:
         print(f"An error occurred while syncing commands: {e}")
 
-# Function to register or update server channels
-def register_channels(guild, cursor, db):
-    for channel in guild.channels:
-        cursor.execute("SELECT id FROM server_channels WHERE guild_id = %s AND channel_id = %s", (guild.id, channel.id))
-        result = cursor.fetchone()
-
-        if result is None:
-            # Insert new channel
-            cursor.execute("""
-                INSERT INTO server_channels (guild_id, channel_id, channel_title) 
-                VALUES (%s, %s, %s)
-            """, (guild.id, channel.id, channel.name))
-            print(f"\033[32mChannel {channel.name} added to server {guild.name}.\033[0m")
-        else:
-            # Update existing channel
-            cursor.execute("""
-                UPDATE server_channels 
-                SET channel_title = %s 
-                WHERE guild_id = %s AND channel_id = %s
-            """, (channel.name, guild.id, channel.id))
-            print(f"\033[33mChannel {channel.name} updated in server {guild.name}.\033[0m")
-
-    db.commit()
-
-def notify_api_status(status):
-    try:
-        # API URL
-        api_url = os.getenv("API_URL")
-        if not api_url:
-            print("\033[31mAPI URL not found. Check your environment variables.\033[0m")
-            return
-
-        # Data to be sent to the API
-        data = {"status": status}
-
-        # POST request to the API with the data in JSON format
-        response = requests.post(api_url, json=data)
-
-        # Check the API response code
-        if response.status_code == 200:
-
-            print("\033[32m" + f"API notified: AbbyBot is {status}." + "\033[0m")
-        else:
-
-            print("\033[33m" + f"Failed to notify API. Status code: {response.status_code}, Response: {response.text}" + "\033[0m")
-    except requests.exceptions.RequestException as e:
-
-        print("\033[31m" + f"Error notifying API: {e}" + "\033[0m")
-
-
 
 @bot.event
 async def on_message(message):
@@ -438,7 +192,7 @@ async def on_message(message):
     if isinstance(message.channel, discord.DMChannel):
         embed = discord.Embed(
             title="Greetings!",
-            description="AbbyBot does not have a DM system, if you need to know information about the Bot, you can run */help* or go to this [Commands URL](https://abbybot.cl/commands-list).",
+            description="AbbyBot does not have a DM system, if you need to know information about the Bot, you can run */help* or go to this [Commands URL](https://abbybotproject.com/commands).",
             color=0xb45428
         )
         embed.set_footer(text="AbbyBot Project - Always here to help.")
@@ -463,8 +217,6 @@ async def on_message(message):
 
         await bot.process_commands(message)
 
-
-
 @bot.event
 async def on_guild_update(before, after):
     with get_db_connection() as db:
@@ -483,34 +235,6 @@ async def on_guild_update(before, after):
         # Check icon change
         if before.icon != after.icon:
             update_server_icon(after, cursor, db)
-
-
-# Function to update the server icon if it has changed
-def update_server_icon(guild, cursor, db):
-    # Get the URL of the server icon or a default URL if it has no icon
-    random_avatar = random.randint(1, 5)
-    guild_icon_url = str(guild.icon.url) if guild.icon else f'https://cdn.discordapp.com/embed/avatars/{random_avatar}.png'
-
-    # Get the URL stored in the database
-    cursor.execute("SELECT guild_icon_url FROM server_settings WHERE guild_id = %s", (guild.id,))
-    result = cursor.fetchone()
-    stored_icon_url = result[0] if result else None
-
-    # Compare the stored URL with the new icon URL
-    if stored_icon_url == guild_icon_url:
-        print("\033[34m" + "Icon has not changed for " + guild.name + ", skipping update." + "\033[0m")
-        return
-
-    # Update the icon URL in the database if it has changed
-    cursor.execute("""
-        UPDATE server_settings 
-        SET guild_icon_url = %s, guild_icon_last_updated = %s
-        WHERE guild_id = %s
-        """, 
-        (guild_icon_url, datetime.now(), guild.id)
-    )
-    db.commit()
-
 
 @bot.event
 async def on_guild_remove(guild):
@@ -539,8 +263,6 @@ async def on_guild_remove(guild):
             db.rollback()  # Rollback if something fails
 
             print("\033[31m" + f"Error deleting data for server '{guild.name}' (ID: {guild.id}): {e}" + "\033[0m")
-
-
 
 @bot.event
 async def on_guild_join(guild):
@@ -609,17 +331,6 @@ async def on_member_update(before, after):
         print("\033[34m" + "Roles added to " + "\033[32m" + after.name + "\033[34m" + ": " + "\033[32m" + str([role.name for role in added_roles]) + "\033[0m")
     if removed_roles:
         print("\033[34m" + "Roles removed from " + "\033[32m" + after.name + "\033[34m" + ": " + "\033[31m" + str([role.name for role in removed_roles]) + "\033[0m")
-
-
-# Signal handler to capture Ctrl+C and notify offline
-def handle_shutdown(signal_received, frame):
-    print("\033[31m" + "\nBot is shutting down..." + "\033[0m")
-
-    # Notify the API that the bot is offline
-    notify_api_status("offline")
-
-    # Close the bot in a controlled manner
-    sys.exit(0)
 
 # Capture the Ctrl+C (SIGINT) signal to execute handle_shutdown
 signal.signal(signal.SIGINT, handle_shutdown)
