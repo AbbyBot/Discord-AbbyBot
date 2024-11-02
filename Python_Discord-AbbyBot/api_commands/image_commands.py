@@ -1,19 +1,12 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-import mysql.connector
-from dotenv import load_dotenv
-import os
 import requests
 import random
 import string
 from embeds.embeds import account_inactive_embed
 from utils.utils import get_bot_avatar
-
-
-
-# Load dotenv variables
-load_dotenv()
+from utils.db_utils import get_db_connection
 
 class ImageCommands(commands.GroupCog, name="image"):
     def __init__(self, bot):
@@ -26,16 +19,8 @@ class ImageCommands(commands.GroupCog, name="image"):
         discord.app_commands.Choice(name="with text", value=3),  
     ])
     async def catimg(self, interaction: discord.Interaction, categories: int, text: str = None):
-
-
         # Connect to database with dotenv variables
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
+        db, cursor = get_db_connection()
 
           # Get guild_id and user_id from the interaction
         guild_id = interaction.guild_id
@@ -73,7 +58,6 @@ class ImageCommands(commands.GroupCog, name="image"):
         else: # user are not "banned"
             await interaction.response.defer()
         
-
         # Query to check the server's language setting (obligatory field)
         cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
         result = cursor.fetchone()
@@ -145,14 +129,7 @@ class ImageCommands(commands.GroupCog, name="image"):
     async def dogimg(self, interaction: discord.Interaction):
 
         # Connect to database with dotenv variables
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
-
+        db, cursor = get_db_connection()
 
         # Get guild_id and user_id from the interaction
         guild_id = interaction.guild_id
@@ -235,13 +212,7 @@ class ImageCommands(commands.GroupCog, name="image"):
 
 
         # Connect to database with dotenv variables
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
+        db, cursor = get_db_connection()
 
 
         # Get guild_id and user_id from the interaction
@@ -366,17 +337,8 @@ class ImageCommands(commands.GroupCog, name="image"):
 
 
     async def waifuimg(self, interaction: discord.Interaction, categories: str):
-
-
-
   # Connect to database with dotenv variables
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
+        db, cursor = get_db_connection()
 
         # Get guild_id and user_id from the interaction
         guild_id = interaction.guild_id
@@ -412,8 +374,6 @@ class ImageCommands(commands.GroupCog, name="image"):
             db.close()
             return
 
-        
-        
         # Check if server is registered
         guild_id = interaction.guild_id
         cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
