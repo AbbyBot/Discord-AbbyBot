@@ -246,7 +246,7 @@ class MusicPlayer(commands.GroupCog, name="music"):
 
         # Check if the user executing the command (interaction.user) is active or inactive
         user_id = interaction.user.id  
-        cursor.execute("SELECT is_active FROM user_profile WHERE user_id = %s;", (user_id,))
+        cursor.execute("SELECT is_active, user_privilege FROM user_profile WHERE user_id = %s;", (user_id,))
         result = cursor.fetchone()
 
         if result is None:
@@ -255,7 +255,7 @@ class MusicPlayer(commands.GroupCog, name="music"):
             db.close()
             return
         
-        is_active = result[0]
+        is_active, user_privilege = result
 
         # If the person executing the command is inactive, send the DM to interaction.user
         if is_active == 0:
@@ -279,6 +279,19 @@ class MusicPlayer(commands.GroupCog, name="music"):
                 "Solicitud rechazada: Tu cuenta ha sido listada como **inactiva** en el sistema AbbyBot, por favor revisa tu DM.",
                 ephemeral=False
             )
+            return
+
+        # Check if the user is premium for premium commands
+        if is_premium and user_privilege not in [3, 6]:
+            embed = discord.Embed(
+                title="Premium Required" if language_id == 1 else "Se requiere Premium",
+                description="You need to be a premium user to use this command." if language_id == 1 else 
+                "Necesitas ser un usuario premium para usar este comando.",
+                color=discord.Color.red()
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            cursor.close()
+            db.close()
             return
 
         # Make sure the user is on a voice channel
