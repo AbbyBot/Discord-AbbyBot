@@ -420,7 +420,7 @@ class UserCommands(commands.GroupCog, name="user"):
 
     @app_commands.command(name="decoration", description="Get user avatar decoration")
     @app_commands.describe(member="The user you want to get their avatar decoration.")
-    async def user_avatar(self, interaction: discord.Interaction, member: discord.Member = None):
+    async def user_decoration(self, interaction: discord.Interaction, member: discord.Member = None):
 
         if member is None:
             member = interaction.user  
