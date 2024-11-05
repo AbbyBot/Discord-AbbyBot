@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS `server_settings` (
     `default_role_id` BIGINT NULL,
     `guild_icon_url` VARCHAR(255) NULL DEFAULT NULL,
     `guild_icon_last_updated` DATETIME NULL DEFAULT NULL,
+    `activated_card_channels` TINYINT NULL DEFAULT NULL,
     `join_channel_id` BIGINT NULL DEFAULT NULL,
     `kick_channel_id` BIGINT NULL DEFAULT NULL,
     `ban_channel_id` BIGINT NULL DEFAULT NULL,
