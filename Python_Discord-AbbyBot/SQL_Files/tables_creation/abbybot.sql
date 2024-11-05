@@ -42,6 +42,9 @@ CREATE TABLE IF NOT EXISTS `server_settings` (
     `default_role_id` BIGINT NULL,
     `guild_icon_url` VARCHAR(255) NULL DEFAULT NULL,
     `guild_icon_last_updated` DATETIME NULL DEFAULT NULL,
+    `join_channel_id` BIGINT NULL DEFAULT NULL,
+    `kick_channel_id` BIGINT NULL DEFAULT NULL,
+    `ban_channel_id` BIGINT NULL DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE INDEX `guild_id_UNIQUE` (`guild_id` ASC) VISIBLE,
     CONSTRAINT `fk_guild_language` FOREIGN KEY (`guild_language`) REFERENCES `languages` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
