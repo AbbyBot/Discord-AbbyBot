@@ -278,7 +278,16 @@ CREATE TABLE IF NOT EXISTS `AbbyBot_Themes` (
 ) ENGINE = InnoDB COMMENT = 'Stores available themes for AbbyBot customization.';
 
 -- Insert initial themes
-INSERT INTO AbbyBot_Themes (id, title) VALUES (1, 'Abby-Theme');
+INSERT INTO
+ AbbyBot_Themes (title, theme_code, theme_class)
+VALUES
+ ('Abby', 'abby-theme','abby-theme'),
+ ('D0Z3R', 'd0z3r-theme','d0z3r-theme'),
+ ('"Masky"', 'masky-theme','masky-theme'),
+ ('"MIA"', 'mia-theme','mia-theme'),
+ ('Nebula Night', 'nebulanight-theme','nebulanight-theme'),
+ ('Node', 'node-theme','node-theme'),
+ ('Python', 'python-theme','python-theme');
 
 INSERT INTO
     languages (
