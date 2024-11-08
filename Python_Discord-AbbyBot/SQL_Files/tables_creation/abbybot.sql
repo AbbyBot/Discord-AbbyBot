@@ -42,7 +42,9 @@ CREATE TABLE IF NOT EXISTS `server_settings` (
     `default_role_id` BIGINT NULL,
     `guild_icon_url` VARCHAR(255) NULL DEFAULT NULL,
     `guild_icon_last_updated` DATETIME NULL DEFAULT NULL,
-    `activated_card_channels` TINYINT NULL DEFAULT NULL,
+    `activated_join_channel` TINYINT NULL DEFAULT 0,
+    `activated_kick_channel` TINYINT NULL DEFAULT 0,
+    `activated_ban_channel` TINYINT NULL DEFAULT 0,
     `join_channel_id` BIGINT NULL DEFAULT NULL,
     `kick_channel_id` BIGINT NULL DEFAULT NULL,
     `ban_channel_id` BIGINT NULL DEFAULT NULL,
@@ -84,15 +86,30 @@ CREATE TABLE IF NOT EXISTS `dialogues` (
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `help`;
 
+-- -----------------------------------------------------
+-- Table `help_categories`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `help_categories`;
+
+CREATE TABLE IF NOT EXISTS `help_categories` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `category_name` VARCHAR(45) NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB COMMENT = 'Categorize the commands.';
+
+
 CREATE TABLE IF NOT EXISTS `help` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `command_code` VARCHAR(45) NOT NULL,
     `command_description` VARCHAR(255) NOT NULL,
     `usage` VARCHAR(255) NOT NULL,
     `language_id` INT NOT NULL,
+    `category_id` INT NOT NULL, -- Nueva columna para enlazar con help_categories
     PRIMARY KEY (`id`),
     INDEX `fk_language_id_idx` (`language_id` ASC) VISIBLE,
-    CONSTRAINT `fk_language_id` FOREIGN KEY (`language_id`) REFERENCES `languages` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+    INDEX `fk_category_id_idx` (`category_id` ASC) VISIBLE,
+    CONSTRAINT `fk_language_id` FOREIGN KEY (`language_id`) REFERENCES `languages` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    CONSTRAINT `fk_category_id` FOREIGN KEY (`category_id`) REFERENCES `help_categories` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE = InnoDB COMMENT = 'Stores help command descriptions for different languages.';
 
 -- -----------------------------------------------------
