@@ -1,10 +1,10 @@
 import discord
 from discord.ext import commands
-import mysql.connector
 from dotenv import load_dotenv
 import os
 from utils.utils import get_bot_avatar
 from datetime import datetime
+from utils.db_utils import get_db_connection
 
 # Cargar variables dotenv
 load_dotenv()
@@ -16,14 +16,8 @@ class RoleDeleteEvent(commands.Cog):
     # Event: on_guild_role_delete
     @commands.Cog.listener()
     async def on_guild_role_delete(self, role: discord.Role):
-        # Load dotenv variables
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
+        # Connect to database with dotenv variables
+        db, cursor = get_db_connection()
 
         guild_id = role.guild.id
 
@@ -59,6 +53,10 @@ class RoleDeleteEvent(commands.Cog):
 
         bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
 
+        # Load dotenv footer text 
+        footer_text_en = os.getenv("FOOTER_TEXT_EN", "AbbyBot")
+        footer_text_es = os.getenv("FOOTER_TEXT_ES", "AbbyBot")
+
         if language_id == 1:
             now = datetime.now()
             english_datetime = now.strftime("%m/%d/%Y %H:%M:%S")
@@ -71,8 +69,8 @@ class RoleDeleteEvent(commands.Cog):
             embed.add_field(name="Date and time", value=english_datetime, inline=True)
             embed.add_field(name="Role name", value=f"{role.name}", inline=True)
             embed.set_footer(
-            text="AbbyBot",  
-            icon_url=bot_avatar_url  
+                text=footer_text_en,  
+                icon_url=bot_avatar_url  
             )
 
 
@@ -88,8 +86,8 @@ class RoleDeleteEvent(commands.Cog):
             embed.add_field(name="Fecha y hora", value=spanish_datetime, inline=True)
             embed.add_field(name="Nombre del rol", value=f"{role.name}", inline=True)
             embed.set_footer(
-            text="AbbyBot",  
-            icon_url=bot_avatar_url  
+                text=footer_text_es,  
+                icon_url=bot_avatar_url  
             )
 
         # Get logs_channel ID

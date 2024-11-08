@@ -1,10 +1,10 @@
 import discord
 from discord.ext import commands
-import mysql.connector
 from dotenv import load_dotenv
 import os
 from utils.utils import get_bot_avatar
 from datetime import datetime
+from utils.db_utils import get_db_connection
 
 # Load dotenv variables
 load_dotenv()
@@ -16,14 +16,8 @@ class ChannelUpdateEvent(commands.Cog):
     # Event: on_guild_channel_update
     @commands.Cog.listener()
     async def on_guild_channel_update(self, before: discord.abc.GuildChannel, after: discord.abc.GuildChannel):
-        # Load dotenv variables
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
+        # Connect to database with dotenv variables
+        db, cursor = get_db_connection()
 
         guild_id = before.guild.id
 
@@ -91,6 +85,9 @@ class ChannelUpdateEvent(commands.Cog):
         bot_id = 1028065784016142398  # AbbyBot ID
         abbyBot_guild_icon = await get_bot_avatar(self.bot, bot_id)
 
+        # Load dotenv footer text 
+        footer_text_en = os.getenv("FOOTER_TEXT_EN", "AbbyBot")
+        footer_text_es = os.getenv("FOOTER_TEXT_ES", "AbbyBot")
 
         if guild_avatar_url is None or not guild_avatar_url[0].startswith("http"):
             
@@ -112,7 +109,7 @@ class ChannelUpdateEvent(commands.Cog):
             embed.add_field(name="Date and time", value=english_datetime, inline=True)
             embed.add_field(name="Changes", value=formatted_changes, inline=False)  # Use formatted changes
             embed.set_footer(
-                text="AbbyBot",  
+                text=footer_text_en,  
                 icon_url=abbyBot_guild_icon  
             )
 
@@ -128,7 +125,7 @@ class ChannelUpdateEvent(commands.Cog):
             embed.add_field(name="Fecha y hora", value=spanish_datetime, inline=True)
             embed.add_field(name="Lista de cambios", value=formatted_changes, inline=False)  # Use formatted changes
             embed.set_footer(
-                text="AbbyBot",  
+                text=footer_text_es,  
                 icon_url=abbyBot_guild_icon  
             )
 

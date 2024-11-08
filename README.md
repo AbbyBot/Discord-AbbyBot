@@ -47,7 +47,8 @@ AbbyBot is built with the use of global variables (dotenv), so you need to creat
 | `DB_PASSWORD`      | Password for your database connection.                                          |
 | `DB_NAME`          | The name of the schema to be used by AbbyBot.                                   |
 | `EMOJIS`           | A list of Discord emojis used randomly by AbbyBot. Example: `<:emoji_name:id>`. |
-| `FOOTER_TEXT`      | The text that appears in all embed footers, example: `AbbyBot - Developer`.     |
+| `FOOTER_TEXT_ES`   | English text for all embed footers, example: `AbbyBot - Development`.           |
+| `FOOTER_TEXT_ES`   | Spanish text for all embed footers, example: `AbbyBot - Desarrollo`.            |
 
 
 

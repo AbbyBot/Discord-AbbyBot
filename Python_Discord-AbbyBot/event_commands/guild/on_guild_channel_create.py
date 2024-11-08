@@ -1,10 +1,10 @@
 import discord
 from discord.ext import commands
-import mysql.connector
 from dotenv import load_dotenv
 import os
 from utils.utils import get_bot_avatar
 from datetime import datetime
+from utils.db_utils import get_db_connection
 
 # Load dotenv variables
 load_dotenv()
@@ -16,14 +16,8 @@ class ChannelCreateEvent(commands.Cog):
     # Event: on_guild_channel_create
     @commands.Cog.listener()
     async def on_guild_channel_create(self, channel: discord.abc.GuildChannel):
-        # Load dotenv variables
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
+        # Connect to database with dotenv variables
+        db, cursor = get_db_connection()
 
         guild_id = channel.guild.id  # Get server ID
 
@@ -59,6 +53,10 @@ class ChannelCreateEvent(commands.Cog):
         bot_id = 1028065784016142398  # AbbyBot ID
         abbyBot_guild_icon = await get_bot_avatar(self.bot, bot_id)
 
+        # Load dotenv footer text 
+        footer_text_en = os.getenv("FOOTER_TEXT_EN", "AbbyBot")
+        footer_text_es = os.getenv("FOOTER_TEXT_ES", "AbbyBot")
+
 
         if bot_avatar_url is None or not bot_avatar_url[0].startswith("http"):
             
@@ -78,7 +76,7 @@ class ChannelCreateEvent(commands.Cog):
             embed.add_field(name="Date and time", value=english_datetime, inline=True)
             embed.add_field(name="Channel name", value=f"{channel.name}", inline=True)
             embed.add_field(name="Who created it?", value=f"{user.name}", inline=True)
-            embed.set_footer(text="AbbyBot", icon_url=abbyBot_guild_icon)
+            embed.set_footer(text=footer_text_en, icon_url=abbyBot_guild_icon)
 
         elif language_id == 2:
             spanish_datetime = now.strftime("%d/%m/%Y %H:%M:%S")
@@ -91,7 +89,7 @@ class ChannelCreateEvent(commands.Cog):
             embed.add_field(name="Fecha y hora", value=spanish_datetime, inline=True)
             embed.add_field(name="Nombre del canal", value=f"{channel.name}", inline=True)
             embed.add_field(name="Quién lo creó?", value=f"{user.name}", inline=True)
-            embed.set_footer(text="AbbyBot", icon_url=abbyBot_guild_icon)
+            embed.set_footer(text=footer_text_es, icon_url=abbyBot_guild_icon)
 
         # Get logs_channel ID
         cursor.execute("SELECT logs_channel FROM server_settings WHERE guild_id = %s", (guild_id,))
