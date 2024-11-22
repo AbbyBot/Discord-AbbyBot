@@ -27,7 +27,6 @@ token = os.getenv("BOT_TOKEN")
 
 # Chat commands import
 from chat_commands.ping import Ping
-from chat_commands.code import Code
 from chat_commands.help import Help
 from chat_commands.tell_history import TellHistory
 from chat_commands.server_commands import ServerCommands
@@ -141,7 +140,6 @@ async def on_ready():
 
     # Load all commands (cogs)
     await bot.add_cog(Ping(bot))
-    await bot.add_cog(Code(bot))
     await bot.add_cog(Deleted_Messages(bot))
     await bot.add_cog(Abby_mentions(bot))
     await bot.add_cog(Help(bot))

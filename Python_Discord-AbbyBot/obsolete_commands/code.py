@@ -84,6 +84,8 @@ class Code(commands.Cog):
         # Validate the selected language or default to plaintext
         language = supported_languages.get(language.lower(), "")
 
+        print(language)
+
         # Format the code with the appropriate language for syntax highlighting
         formatted_code = f"```{language}\n{code}\n```"
 
