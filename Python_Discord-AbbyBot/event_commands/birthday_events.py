@@ -2,9 +2,9 @@ import discord
 from discord.ext import commands, tasks
 import mysql.connector
 from dotenv import load_dotenv
-import os
 from datetime import datetime, timezone
 from utils.utils import get_bot_avatar
+from utils.db_utils import get_db_connection
 
 bot_id = 1028065784016142398  # AbbyBot ID
 
@@ -26,16 +26,7 @@ class BirthdayEvent(commands.Cog):
         print(f"\033[36mCurrent date: {today_str}\033[0m")
 
         # DB settings
-        try:
-            db = mysql.connector.connect(
-                host=os.getenv("DB_HOST"),
-                user=os.getenv("DB_USER"),
-                password=os.getenv("DB_PASSWORD"),
-                database=os.getenv("DB_NAME")
-            )
-            cursor = db.cursor()
-        except mysql.connector.Error:
-            return
+        db, cursor = get_db_connection()
 
         # SQL query to find users with birthdays today
         try:

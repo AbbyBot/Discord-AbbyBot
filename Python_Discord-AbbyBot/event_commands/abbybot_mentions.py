@@ -1,14 +1,12 @@
-import discord
+from utils.db_utils import get_db_connection
 from discord.ext import commands
-import mysql.connector
 from dotenv import load_dotenv
-import os
 from datetime import datetime
 
 # Load dotenv variables
 load_dotenv()
 
-class Abby_mentions(commands.Cog):
+class abbybot_mentions(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -26,13 +24,7 @@ class Abby_mentions(commands.Cog):
             guild_id = str(message.guild.id)
 
             # Database connection
-            db = mysql.connector.connect(
-                host=os.getenv("DB_HOST"),
-                user=os.getenv("DB_USER"),
-                password=os.getenv("DB_PASSWORD"),
-                database=os.getenv("DB_NAME")
-            )
-            cursor = db.cursor()
+            db, cursor = get_db_connection()
 
             # Check if the server is registered
             cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
@@ -158,7 +150,3 @@ class Abby_mentions(commands.Cog):
             # Deactivated events
             else:
                 return
-
-
-async def setup(bot):
-    await bot.add_cog(Abby_mentions(bot))

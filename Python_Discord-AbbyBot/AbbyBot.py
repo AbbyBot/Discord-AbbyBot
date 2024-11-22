@@ -38,7 +38,7 @@ from settings_commands.set_commands import SetCommands
 
 # Events import
 from event_commands.deleted_messages import Deleted_Messages
-from event_commands.Abby_mentions import Abby_mentions
+from event_commands.abbybot_mentions import abbybot_mentions
 from event_commands.birthday_events import BirthdayEvent
 
 # Control commands import
@@ -141,7 +141,7 @@ async def on_ready():
     # Load all commands (cogs)
     await bot.add_cog(Ping(bot))
     await bot.add_cog(Deleted_Messages(bot))
-    await bot.add_cog(Abby_mentions(bot))
+    await bot.add_cog(abbybot_mentions(bot))
     await bot.add_cog(Help(bot))
 
     await bot.add_cog(TellHistory(bot))
