@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
+import asyncio
 from embeds.embeds import account_inactive_embed  # import embed system
 from utils.utils import get_bot_avatar
 from utils.db_utils import get_db_connection
@@ -308,7 +309,6 @@ class UserCommands(commands.GroupCog, name="user"):
     @app_commands.command(name="avatar", description="Get user avatar")
     @app_commands.describe(member="The user you want to get their avatar.")
     async def user_avatar(self, interaction: discord.Interaction, member: discord.Member = None):
-
         if member is None:
             member = interaction.user  
 
@@ -371,42 +371,44 @@ class UserCommands(commands.GroupCog, name="user"):
         # Then create embed
         if user.avatar:
             avatar_url = user.avatar.url
-            if language_id == 1:
-                embed = discord.Embed(
-                    title=f"{member.display_name}'s Avatar",
+            server_avatar_url = member.display_avatar.url if member.display_avatar != user.avatar else None
+
+            bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
+            footer_text = os.getenv("FOOTER_TEXT", "AbbyBot")  
+
+            # Send Global Avatar Embed
+            embed_global = discord.Embed(
+                title=f"¡Wow, {member.display_name} tiene un estilo increíble!" if language_id == 2 else f"{member.display_name}'s Global Avatar",
+                description="Aquí está tu avatar global. ¡Luce genial!" if language_id == 2 else "Here is your global avatar. Looking good!",
+                color=discord.Color.green()
+            )
+            embed_global.set_image(url=avatar_url)
+            embed_global.set_footer(text=footer_text, icon_url=bot_avatar_url)
+
+            await interaction.response.send_message(embed=embed_global)
+
+            # Send Server-Specific Avatar Embed (if applicable)
+            if server_avatar_url:
+                embed_server = discord.Embed(
+                    title=f"¡Un toque único para este servidor, {member.display_name}!" if language_id == 2 else f"{member.display_name}'s Server-specific Avatar",
+                    description="Este es tu avatar exclusivo del servidor. ¡Fantástico trabajo!" if language_id == 2 else "This is your server-specific avatar. Fantastic choice!",
                     color=discord.Color.blue()
                 )
-                embed.set_image(url=avatar_url)
-                embed.add_field(name="Look at that awesome avatar!", value='\u200b', inline=True)
-            elif language_id == 2:
-                embed = discord.Embed(
-                    title=f"Avatar de {member.display_name}",
-                    color=discord.Color.blue()
-                )
-                embed.set_image(url=avatar_url)
-                embed.add_field(name="¡Miren ese increíble avatar!", value='\u200b', inline=True)
+                embed_server.set_image(url=server_avatar_url)
+                embed_server.set_footer(text=footer_text, icon_url=bot_avatar_url)
+
+                # Send second embed
+                await interaction.channel.send(embed=embed_server)
+
         else:
             if language_id == 1:
                 await interaction.response.send_message(f"{member.display_name} does not have an avatar. Please try another user.", ephemeral=True)
             elif language_id == 2:
                 await interaction.response.send_message(f"{member.display_name} no tiene un avatar. Por favor, prueba con otro usuario.", ephemeral=True)
-            cursor.close()
-            db.close()
-            return  # If no avatar stop command
-
-        # Footer
-        bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
-        footer_text = os.getenv("FOOTER_TEXT", "AbbyBot")  
-
-        embed.set_footer(
-            text=footer_text,  
-            icon_url=bot_avatar_url  
-        )
-
-        await interaction.response.send_message(embed=embed)
 
         cursor.close()
         db.close()
+
 
     @app_commands.command(name="decoration", description="Get user avatar decoration")
     @app_commands.describe(member="The user you want to get their avatar decoration.")
