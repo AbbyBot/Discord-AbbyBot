@@ -296,6 +296,52 @@ CREATE TABLE IF NOT EXISTS `AbbyBot_Themes` (
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB COMMENT = 'Stores available themes for AbbyBot customization.';
 
+
+-- -----------------------------------------------------
+-- AbbyBot Story telling tables
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS story_chapters;
+
+CREATE TABLE story_chapters (
+    id INT AUTO_INCREMENT PRIMARY KEY,         
+    language_id INT NOT NULL,                  
+    chapter_name VARCHAR(100) NOT NULL,        
+    description TEXT,                          
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (language_id) REFERENCES languages(id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB COMMENT = 'Stores story chapters for different languages.';
+
+DROP TABLE IF EXISTS story_pages;
+
+CREATE TABLE story_pages (
+    id INT AUTO_INCREMENT PRIMARY KEY,         
+    chapter_id INT NOT NULL,                   
+    page_number INT NOT NULL,                  
+    content TEXT NOT NULL,                     
+    image_url VARCHAR(255),                    
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (chapter_id) REFERENCES story_chapters(id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB COMMENT = 'Stores story pages for different chapters.';
+
+DROP TABLE IF EXISTS user_progress_v2;
+
+CREATE TABLE user_progress_v2 (
+    id INT AUTO_INCREMENT PRIMARY KEY,         
+    user_id BIGINT NOT NULL,                   
+    chapter_id INT NOT NULL,                   
+    page_number INT DEFAULT 1,                 
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (chapter_id) REFERENCES story_chapters(id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB COMMENT = 'Tracks user progress in story chapters.';
+
+INSERT INTO story_chapters (language_id, chapter_name, description)
+VALUES 
+(1, 'Origins', 'The beginning of AbbyBot.'),
+(2, 'Orígenes', 'El comienzo de AbbyBot.');
+
+
+
 -- Insert initial themes
 INSERT INTO
  AbbyBot_Themes (title, theme_code, theme_class)
