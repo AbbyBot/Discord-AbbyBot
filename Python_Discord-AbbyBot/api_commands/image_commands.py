@@ -1,12 +1,10 @@
-import discord
 from discord.ext import commands
 from discord import app_commands
+from utils.db_utils import get_db_connection
 import requests
+import discord
 import random
 import string
-from embeds.embeds import account_inactive_embed
-from utils.utils import get_bot_avatar
-from utils.db_utils import get_db_connection
 import os
 
 class ImageCommands(commands.GroupCog, name="image"):
