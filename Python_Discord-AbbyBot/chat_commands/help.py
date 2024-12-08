@@ -1,30 +1,40 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-import os
-from embeds.embeds import account_inactive_embed
-from utils.utils import get_bot_avatar 
 from utils.db_utils import get_db_connection
-
+import os
 
 class Help(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(name="help", description="Do you have any questions?")
-    async def help(self, interaction: discord.Interaction):
-
+    async def autocomplete_category(self, interaction: discord.Interaction, current: str):
         db, cursor = get_db_connection()
 
-        # Get guild_id and user_id from the interaction
+        # Query categories in the database, filtering by current text
+        cursor.execute(
+            "SELECT id, category_name FROM help_categories WHERE category_name LIKE %s",
+            (f"%{current}%",)
+        )
+        categories = cursor.fetchall()
+
+        # Close database connection
+        cursor.close()
+        db.close()
+
+        # Return categories for autocomplete
+        return [app_commands.Choice(name=cat[1], value=str(cat[0])) for cat in categories]
+
+    @app_commands.command(name="help", description="Do you have any questions?")
+    @app_commands.autocomplete(category=autocomplete_category)  # Autocomplete for category
+    async def help(self, interaction: discord.Interaction, category: str):
+        db, cursor = get_db_connection()
+
+        # Get guild_id and user_id from the command
         guild_id = interaction.guild_id
         user_id = interaction.user.id
 
-        # Check if server is registered
-        cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
-        result = cursor.fetchone()
-
-        # Query to check the server's language setting (obligatory field)
+        # Check if the server is registered and get the language
         cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
         result = cursor.fetchone()
 
@@ -33,66 +43,58 @@ class Help(commands.Cog):
             cursor.close()
             db.close()
             return
-        
-        # Get server language
-        
-        language_id = result[0]  # Get language ID
 
-        # Commands and description Query
-        cursor.execute("SELECT command_code, command_description FROM help WHERE language_id = %s", (language_id,))
+        language_id = result[0]
+
+        # Query commands related to the category
+        cursor.execute(
+            "SELECT command_code, command_description FROM help WHERE language_id = %s AND category_id = %s",
+            (language_id, category)
+        )
         commands_help = cursor.fetchall()
 
-        # Validate the language, title, and change the description as appropriate
+        # Define title and description text according to language
         if language_id == 1:
-            description_title = 'Help'
-            description_text = "Here are the available commands:"
+            description_title = '📖 AbbyBot Help Center'
+            description_text = "✨ Explore the available commands below:"
         elif language_id == 2:
-            description_title = 'Ayuda'
-            description_text = "Aquí están los comandos disponibles:"
+            description_title = '📖 Centro de Ayuda de AbbyBot'
+            description_text = "✨ Explora los comandos disponibles a continuación:"
         else:
-            description_title = 'Help'
-            description_text = "Here are the available commands:"  # English default
+            description_title = '📖 AbbyBot Help Center'
+            description_text = "✨ Explore the available commands below:"
 
         # Create embed
         embed = discord.Embed(
             title=description_title,
             description=description_text,
-            color=discord.Color.from_rgb(145, 61, 33)  # Abbybot's color
+            color=discord.Color.from_rgb(145, 61, 33)  # Abbybot color
         )
 
-        # Add commands and descriptions
-        for command_code, command_description in commands_help:
-            embed.add_field(name=command_code, value=command_description, inline=False)
+        # Add commands and descriptions to the embed
+        if commands_help:
+            for command_code, command_description in commands_help:
+                embed.add_field(name=f"🔹 {command_code}", value=command_description, inline=False)
+        else:
+            embed.description = "❌ No commands found for this category."
+
+        # Set image as thumbnail (PFP-style)
+        image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "images", "profile_emotes", "abbybot_laptop.png")
+        file = discord.File(image_path, filename="abbybot_thumbnail.png")
+        embed.set_thumbnail(url="attachment://abbybot_thumbnail.png")
 
         
-        # Validate the language, different img
-        if language_id == 1:
-            # Abbybot's pfp.png file (English)
-            image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "images", "help", "abbybot-help_en.png")
-        elif language_id == 2:
-            # Abbybot's pfp.png file (Spanish)
-            image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "images", "help", "abbybot-help_es.png")
-        else:
-            # Abbybot's pfp.png file (English DEFAULT)
-            image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "images", "help", "abbybot-help_en.png")
+        footer_image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "images", "abbybot.png")
+        footer_file = discord.File(footer_image_path, filename="abbybot.png")
+        embed.set_footer(text="AbbyBot • Your Discord Ally", icon_url="attachment://abbybot.png")
 
-        # Load image like discord file
-        file = discord.File(image_path, filename="abbybot.png")
+        
+        view = discord.ui.View()
+        view.add_item(discord.ui.Button(label="Command List", url="https://abbybotproject.com/commands", style=discord.ButtonStyle.link))
+        view.add_item(discord.ui.Button(label="Website", url="https://abbybotproject.com", style=discord.ButtonStyle.link))
 
-        # Add img to embed
-        embed.set_image(url="attachment://abbybot.png")
+        
+        await interaction.response.send_message(embed=embed, files=[file, footer_file], view=view)
 
-        bot_id = 1028065784016142398  # AbbyBot ID
-
-
-        bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
-
-        embed.set_footer(text="AbbyBot",  icon_url=bot_avatar_url)
-
-        # Send message and image
-        await interaction.response.send_message(embed=embed, file=file)
-
-        # Close db connection
         cursor.close()
         db.close()
-
