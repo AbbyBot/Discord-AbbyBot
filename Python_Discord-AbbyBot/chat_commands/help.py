@@ -91,7 +91,7 @@ class Help(commands.Cog):
         
         view = discord.ui.View()
         view.add_item(discord.ui.Button(label="Command List", url="https://abbybotproject.com/commands", style=discord.ButtonStyle.link))
-        view.add_item(discord.ui.Button(label="Website", url="https://abbybotproject.com", style=discord.ButtonStyle.link))
+        view.add_item(discord.ui.Button(label="AbbyBot Website", url="https://abbybotproject.com", style=discord.ButtonStyle.link))
 
         
         await interaction.response.send_message(embed=embed, files=[file, footer_file], view=view)
