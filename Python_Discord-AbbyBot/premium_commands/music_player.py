@@ -2,11 +2,11 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import os
-import mysql.connector
 from dotenv import load_dotenv
 from embeds.embeds import account_inactive_embed
 from utils.utils import get_bot_avatar
 import asyncio
+from utils.db_utils import get_db_connection
 
 # Load dotenv variables
 load_dotenv()
@@ -46,13 +46,7 @@ class MusicPlayer(commands.GroupCog, name="music"):
         guild_id = interaction.guild.id
 
         # Connect to the database
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
+        db, cursor = get_db_connection()
 
         # Get the language ID for the server
         cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
@@ -83,13 +77,7 @@ class MusicPlayer(commands.GroupCog, name="music"):
         guild_id = interaction.guild.id
 
         # Connect to the database
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
+        db, cursor = get_db_connection()
 
         # Get the language ID for the server
         cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
@@ -157,13 +145,7 @@ class MusicPlayer(commands.GroupCog, name="music"):
         guild_id = interaction.guild.id
 
         # Connect to the database
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
+        db, cursor = get_db_connection()
 
         # Get the language ID for the server
         cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
@@ -224,13 +206,7 @@ class MusicPlayer(commands.GroupCog, name="music"):
         guild_id = interaction.guild.id  # Guild ID
 
         # Connect to the database
-        db = mysql.connector.connect(
-            host=os.getenv("DB_HOST"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
-        )
-        cursor = db.cursor()
+        db, cursor = get_db_connection()
 
         # Get the language ID for the server
         cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
