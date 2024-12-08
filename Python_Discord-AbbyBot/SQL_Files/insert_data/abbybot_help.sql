@@ -1,3 +1,12 @@
+INSERT INTO `help_categories` (category_name)
+VALUES
+('Control Commands'),
+('Minigames Commands'),
+('Music Commands'),
+('Utility Commands'),
+('User Commands'),
+('Image Commands');
+
 -- English help inserts  (language_id = 1)
 INSERT INTO `help` (`command_code`, `command_description`, `usage`, `language_id`, `category_id`)
 VALUES
