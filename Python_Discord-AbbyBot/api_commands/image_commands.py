@@ -248,114 +248,65 @@ class ImageCommands(commands.GroupCog, name="image"):
             cursor.close()
             db.close()
 
+    @app_commands.command(name="waifu",description="Show a random waifu image from a random category.")
+    async def random_waifu(self, interaction: discord.Interaction):
+        await interaction.response.defer()  # Always defer the response
 
-    @app_commands.command(name="waifu", description="Show image of a random waifu, 30 different categories available.")
-    @app_commands.choices(categories=[
-        discord.app_commands.Choice(name="waifu", value="waifu"),
-        discord.app_commands.Choice(name="neko", value="neko"),  
-        discord.app_commands.Choice(name="bully", value="bully"),  
-        discord.app_commands.Choice(name="cry", value="cry"),    
-        discord.app_commands.Choice(name="hug", value="hug"),    
-        discord.app_commands.Choice(name="awoo", value="awoo"),
-        discord.app_commands.Choice(name="kiss", value="kiss"),
-        discord.app_commands.Choice(name="lick", value="lick"),
-        discord.app_commands.Choice(name="pat", value="pat"),
-        discord.app_commands.Choice(name="smug", value="smug"),
-        discord.app_commands.Choice(name="bonk", value="bonk"),
-        discord.app_commands.Choice(name="yeet", value="yeet"),
-        discord.app_commands.Choice(name="blush", value="blush"),
-        discord.app_commands.Choice(name="smile", value="smile"),
-        discord.app_commands.Choice(name="wave", value="wave"),
-        discord.app_commands.Choice(name="highfive", value="highfive"),
-        discord.app_commands.Choice(name="handhold", value="handhold"),
-        discord.app_commands.Choice(name="nom", value="nom"),
-        discord.app_commands.Choice(name="bite", value="bite"),
-        discord.app_commands.Choice(name="glomp", value="glomp"),
-        discord.app_commands.Choice(name="happy", value="happy"),
-        discord.app_commands.Choice(name="wink", value="wink"),
-        discord.app_commands.Choice(name="poke", value="poke"),
-        discord.app_commands.Choice(name="dance", value="dance"),
-    ])
+        WAIFU_CATEGORIES = [
+            "waifu", "neko", "shinobu", "megumin", "bully", "cuddle", "cry", "hug", "awoo", 
+            "kiss", "lick", "pat", "smug", "blush", "smile", "wave", "poke", "dance", 
+            "happy", "wink", "nom", "bite", "slap", "kick", "cringe", "bonk", "yeet", 
+            "handhold", "glomp", "kill"
+        ]
 
+        try:
+            # Select a random category
+            category = random.choice(WAIFU_CATEGORIES)
 
-    async def waifuimg(self, interaction: discord.Interaction, categories: str):
-  # Connect to database with dotenv variables
-        db, cursor = get_db_connection()
+            # Fetch waifu image from the API
+            url = f"https://api.waifu.pics/sfw/{category}"  # API URL
+            response = requests.get(url)
 
-        # Get guild_id and user_id from the interaction
-        guild_id = interaction.guild_id
-        user_id = interaction.user.id
+            if response.status_code != 200:
+                await interaction.followup.send("Failed to retrieve waifu image. Please try again later.", ephemeral=True)
+                return
 
-        # Check if the user is active (is_active = 1) or inactive (is_active = 0)
-        cursor.execute("SELECT is_active FROM user_profile WHERE user_id = %s;", (user_id,))
-        result = cursor.fetchone()
-
-        if result is None:
-            await interaction.response.send_message("User not found in the database.", ephemeral=True)
-            cursor.close()
-            db.close()
-            return
-
-        # If the user is inactive (is_active = 0), send an embed in DM and exit
-        is_active = result[0]
-        if is_active == 0:
-            try:
-                # Get the embed and file
-                embed, file = account_inactive_embed()
-
-                # Send the embed and the file as DM
-                await interaction.user.send(embed=embed, file=file)
-                
-                print(f"User {interaction.user} is inactive and notified.")
-            except discord.Forbidden:
-                print(f"Could not send DM to {interaction.user}. They may have DMs disabled.")
-
-            await interaction.response.send_message("Request Rejected: Your account has been listed as **inactive** in the AbbyBot system, please check your DM.", ephemeral=True)
-
-            cursor.close()
-            db.close()
-            return
-
-        # Check if server is registered
-        guild_id = interaction.guild_id
-        cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
-        result = cursor.fetchone()
-
-        if result is None:
-            # if server is not registered, send error message
-            await interaction.response.send_message("This server is not registered. Please contact the admin.", ephemeral=True)
-            cursor.close()
-            db.close()
-            return
-
-        # Get the language_id of the server
-        language_id = result[0]
-
-
-        url = f"https://api.waifu.pics/sfw/{categories}" # API url
-
-        response = requests.get(url)  # GET request
-
-        if response.status_code == 200:
             data = response.json()
-            img_waifu = data['url']
+            img_waifu = data["url"]
 
-        embed = discord.Embed(
-            title=f"Here's your {categories} image!" if language_id == 1 else f"Aquí tiene su imagen de categoría {categories}!",
-            description="Enjoy your image!" if language_id == 1 else "Disfrute su imagen!",
-            color=discord.Color.random()
-        )
-        embed.set_image(url=img_waifu)
+            # Create embed
+            embed = discord.Embed(
+                title=f"Here's a random {category} image!",
+                color=discord.Color.random()
+            )
+            embed.add_field(
+                name="🔗 Image Credit",
+                value="Powered by [waifu.pics](https://waifu.pics)",
+                inline=False
+            )
+            embed.set_image(url=img_waifu)
 
+            # Add thumbnail
+            thumbnail_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "images", "profile_emotes", "abbybot_heart.png")
+            thumbnail_file = discord.File(thumbnail_path, filename="abbybot_thumbnail.png")
+            embed.set_thumbnail(url="attachment://abbybot_thumbnail.png")
 
-        bot_id = 1028065784016142398  # AbbyBot ID
-        bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
-    
-        embed.set_footer(text="Powered by waifu.pics API" if language_id == 1 else "Imagen por waifu.pics API", icon_url=bot_avatar_url)
+            # Add footer
+            footer_image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "images", "abbybot.png")
+            footer_file = discord.File(footer_image_path, filename="abbybot.png")
+            embed.set_footer(
+                text="AbbyBot • Your Discord Ally",
+                icon_url="attachment://abbybot.png"
+            )
 
-        await interaction.response.send_message(embed=embed)
+            # Create button
+            view = discord.ui.View()
+            button = discord.ui.Button(label="Visit AbbyBot Website", url="https://abbybotproject.com")
+            view.add_item(button)
 
-        cursor.close()
-        db.close()
+            # Send response
+            await interaction.followup.send(embed=embed, files=[thumbnail_file, footer_file], view=view)
 
-
+        except Exception as e:
+            print(f"Error in 'random_waifu' command: {e}")
+            await interaction.followup.send("An unexpected error occurred. Please try again later.", ephemeral=True)
