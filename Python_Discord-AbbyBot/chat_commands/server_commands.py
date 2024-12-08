@@ -90,7 +90,7 @@ class ServerCommands(commands.GroupCog, name="server"):
                 "Sticker Count": sticker_count,
                 "AFK Channel": afk_channel,
                 "AFK Timeout": afk_timeout,
-                "Language": language_name,
+                "AbbyBot's Language": language_name,
             }
         elif guild_language == 2:  # Spanish
             embed_title = f"Información del Servidor {guild_name}"
