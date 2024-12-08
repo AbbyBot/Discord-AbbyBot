@@ -324,9 +324,9 @@ CREATE TABLE story_pages (
     FOREIGN KEY (chapter_id) REFERENCES story_chapters(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE = InnoDB COMMENT = 'Stores story pages for different chapters.';
 
-DROP TABLE IF EXISTS user_progress_v2;
+DROP TABLE IF EXISTS user_progress;
 
-CREATE TABLE user_progress_v2 (
+CREATE TABLE user_progress (
     id INT AUTO_INCREMENT PRIMARY KEY,         
     user_id BIGINT NOT NULL,                   
     chapter_id INT NOT NULL,                   
