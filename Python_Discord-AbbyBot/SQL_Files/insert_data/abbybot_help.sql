@@ -1,57 +1,107 @@
+
+DELETE FROM `help_categories` WHERE id;
+
+
 INSERT INTO `help_categories` (category_name)
 VALUES
+('Image Commands'),
 ('Control Commands'),
+('User Commands'),
 ('Minigames Commands'),
 ('Music Commands'),
 ('Utility Commands'),
-('User Commands'),
-('Image Commands');
-
--- English help inserts  (language_id = 1)
-INSERT INTO `help` (`command_code`, `command_description`, `usage`, `language_id`, `category_id`)
-VALUES
-('/help', 'Need assistance with AbbyBot? 🤖 This command shows a list of available commands and their functions.', '/help', 1, 1),
-('/birthday set', 'Set your birthday 🎂 and let AbbyBot greet you on your special day!', '/birthday set [month] [day] [year]', 1, 5),
-('/blackjack', 'Play classic Blackjack ♠️ with AbbyBot.', '/blackjack', 1, 3),
-('/cat-code', 'Get random images of adorable cats 🐱.', '/cat-image [categories]', 1, 6),
-('/code', 'Send formatted code snippets 💻.', '/code [code]', 1, 7),
-('/dog-img', 'Get random images of cute dogs 🐶.', '/dog-img', 1, 6),
-('/events_control', 'Enable or disable AbbyBot’s event system ⚙️. Admins only.', '/events_control [enabled/disabled]', 1, 2),
-('/neko-img', 'Get random images of nekomimi (cat girls) 😻.', '/neko-img', 1, 6),
-('/ping', 'Check your ping 🏓.', '/ping', 1, 1),
-('/rockpaperscissors', 'Play Rock, Paper, Scissors ✂️ with AbbyBot.', '/rockpaperscissors [rock/paper/scissors]', 1, 3),
-('/server_info', 'View server info 📊.', '/server_info', 1, 2),
-('/set_birthday_channel', 'Assign a channel where AbbyBot will send birthday greetings 🎉. Admins only.', '/set_birthday_channel [channel]', 1, 2),
-('/set_language', 'Set the language 🌍 for AbbyBot. Admins only.', '/set_language', 1, 2),
-('/set_logs_channel', 'Assign a Logs channel 📜 for AbbyBot. Admins only.', '/set_logs_channel [channel]', 1, 2),
-('/set_prefix', 'Set the bot prefix 🛠️. Admins only.', '/set_prefix [prefix]', 1, 2),
-('/tell_story', 'Let AbbyBot tell an epic story 📖!', '/tell_story [category]', 1, 3),
-('/user_info', 'Check information about a specific user 🔍.', '/user_info [user]', 1, 5),
-('/waifu_img', 'Get random images of waifus 💕, with categories.', '/waifu_img [user]', 1, 6);
+('AbbyBot Lore Commands');
 
 
+DELETE FROM `help` WHERE `language_id` = 1;
 
--- Spanish help inserts  (language_id = 2)
 
 INSERT INTO `help` (`command_code`, `command_description`, `usage`, `language_id`, `category_id`)
 VALUES
-('/help', '¿Necesitas ayuda con AbbyBot? 🤖 Este comando te muestra la lista de comandos disponibles y sus funciones.', '/help', 2, 1),
-('/birthday set', 'Establece tu cumpleaños 🎂 y deja que AbbyBot te felicite en tu día especial.', '/birthday set [mes] [día] [año]', 2, 5),
-('/blackjack', 'Juega Blackjack clásico ♠️ con AbbyBot.', '/blackjack', 2, 3),
-('/cat-code', 'Obtén imágenes aleatorias de adorables gatos 🐱.', '/cat-image [categorías]', 2, 6),
-('/code', 'Envía fragmentos de código formateados 💻.', '/code [código]', 2, 7),
-('/dog-img', 'Obtén imágenes aleatorias de lindos perros 🐶.', '/dog-img', 2, 6),
-('/events_control', 'Activa o desactiva el sistema de eventos de AbbyBot ⚙️. Solo para administradores.', '/events_control [enabled/disabled]', 2, 2),
-('/neko-img', 'Obtén imágenes aleatorias de nekomimi (chicas gato) 😻.', '/neko-img', 2, 6),
-('/ping', 'Prueba tu ping 🏓.', '/ping', 2, 1),
-('/rockpaperscissors', 'Juega Piedra, Papel o Tijera ✂️ con AbbyBot.', '/rockpaperscissors [piedra/papel/tijeras]', 2, 3),
-('/server_info', 'Consulta la información del servidor 📊.', '/server_info', 2, 2),
-('/set_birthday_channel', 'Asigna un canal donde AbbyBot enviará felicitaciones de cumpleaños 🎉. Solo para administradores.', '/set_birthday_channel [canal]', 2, 2),
-('/set_language', 'Establece el idioma 🌍 para AbbyBot. Solo para administradores.', '/set_language', 2, 2),
-('/set_logs_channel', 'Asigna un canal de logs 📜 para AbbyBot. Solo para administradores.', '/set_logs_channel [canal]', 2, 2),
-('/set_prefix', 'Establece el prefijo del bot 🛠️. Solo para administradores.', '/set_prefix [prefijo]', 2, 2),
-('/tell_story', 'Deja que AbbyBot cuente una historia épica 📖.', '/tell_story [categoría]', 2, 3),
-('/user_info', 'Consulta la información de un usuario específico 🔍.', '/user_info [usuario]', 2, 5),
-('/waifu_img', 'Obtén imágenes aleatorias de waifus 💕, con categorías.', '/waifu_img [usuario]', 2, 6);
+-- Image Commands
+('/image cat', 'Get random images of adorable cats 🐱.', '/image cat [categories]', 1, 1),
+('/image dog', 'Get random images of cute dogs 🐶.', '/image dog', 1, 1),
+('/image waifu', 'Get random images of waifus 💕.', '/image waifu', 1, 1),
+('/image neko', 'Get random images of neko girls 😻.', '/image neko', 1, 1),
+
+-- Control Commands
+('/control events', 'Enable or disable AbbyBot events ⚙️.', '/control events [activated_events] True False', 1, 2),
+('/control logs', 'Enable or disable logs for AbbyBot ⚙️.', '/control logs [activated_logs] True False', 1, 2),
+('/control birthday', 'Enable or disable birthday greetings 🎂.', '/control birthday [activated_birthday] True False', 1, 2),
+('/set language', 'Set AbbyBot language 🌍.', '/set language [language]', 1, 2),
+('/set birthday_channel', 'Set the channel for birthday greetings 🎉.', '/set birthday_channel [channel_code]', 1, 2),
+('/set logs_channel', 'Set the logs channel 📜.', '/set logs_channel [channel_code]', 1, 2),
+('/set prefix', 'Set the bot prefix 🛠️.', '/set prefix [prefix]', 1, 2),
+
+-- User Commands
+('/set birthday', 'Set your birthday 🎂.', '/set birthday [month] [day] [year]', 1, 3),
+('/user info', 'Get information about a user 🔍.', '/user info [user]', 1, 3),
+('/user avatar', 'Get the avatar of a user 🖼️.', '/user avatar [user]', 1, 3),
+('/user banner', 'Get the banner of a user 🖼️.', '/user banner [user]', 1, 3),
+('/user decoration', 'Get the decorations of a user 🖼️.', '/user decoration [user]', 1, 3),
+
+-- Minigames Commands
+('/minigames rps', 'Play Rock, Paper, Scissors ✂️.', '/minigames rps [option]', 1, 4),
+('/minigames blackjack', 'Play classic Blackjack ♠️.', '/minigames blackjack', 1, 4),
+
+-- Music Commands
+('/music premium', 'Upload and play a premium audio file 🎵.', '/music premium [file]', 1, 5),
+('/music play', 'Play an audio file 🎵.', '/music play [file]', 1, 5),
+('/music queue', 'View the current music queue 🎶.', '/music queue', 1, 5),
+('/music skip', 'Skip the current track ⏩.', '/music skip', 1, 5),
+('/music status', 'View the current music status 📊.', '/music status', 1, 5),
+
+-- Utility Commands
+('/ping', 'Check the bot\'s latency 🏓.', '/ping', 1, 6),
+('/help', 'Get help for AbbyBot commands 🤖.', '/help [category]', 1, 6),
+('/server info', 'Get server information 📊.', '/server info', 1, 6),
+
+-- AbbyBot Lore Commands
+('/tell story', 'Let AbbyBot tell you a story 📖.', '/tell story', 1, 7);
 
 
+DELETE FROM `help` WHERE `language_id` = 2;
+
+
+INSERT INTO `help` (`command_code`, `command_description`, `usage`, `language_id`, `category_id`)
+VALUES
+-- Comandos de Imágenes
+('/image cat', 'Obtén imágenes aleatorias de gatos adorables 🐱.', '/image cat [categorías]', 2, 1),
+('/image dog', 'Obtén imágenes aleatorias de perros lindos 🐶.', '/image dog', 2, 1),
+('/image waifu', 'Obtén imágenes aleatorias de waifus 💕.', '/image waifu', 2, 1),
+('/image neko', 'Obtén imágenes aleatorias de chicas neko 😻.', '/image neko', 2, 1),
+
+-- Comandos de Control
+('/control events', 'Activa o desactiva los eventos de AbbyBot ⚙️.', '/control events [activated_events] True False', 2, 2),
+('/control logs', 'Activa o desactiva los registros para AbbyBot ⚙️.', '/control logs [activated_logs] True False', 2, 2),
+('/control birthday', 'Activa o desactiva los saludos de cumpleaños 🎂.', '/control birthday [activated_birthday] True False', 2, 2),
+('/set language', 'Configura el idioma de AbbyBot 🌍.', '/set language [language]', 2, 2),
+('/set birthday_channel', 'Configura el canal para los saludos de cumpleaños 🎉.', '/set birthday_channel [channel_code]', 2, 2),
+('/set logs_channel', 'Configura el canal de registros 📜.', '/set logs_channel [channel_code]', 2, 2),
+('/set prefix', 'Configura el prefijo del bot 🛠️.', '/set prefix [prefix]', 2, 2),
+
+-- Comandos de Usuario
+('/set birthday', 'Establece tu cumpleaños 🎂.', '/set birthday [mes] [día] [año]', 2, 3),
+('/user info', 'Consulta información de un usuario 🔍.', '/user info [usuario]', 2, 3),
+('/user avatar', 'Consulta el avatar de un usuario 🖼️.', '/user avatar [usuario]', 2, 3),
+('/user banner', 'Consulta el banner de un usuario 🖼️.', '/user banner [usuario]', 2, 3),
+('/user decoration', 'Consulta las decoraciones de un usuario 🖼️.', '/user decoration [usuario]', 2, 3),
+
+-- Comandos de Minijuegos
+('/minigames rps', 'Juega Piedra, Papel o Tijera ✂️.', '/minigames rps [opción]', 2, 4),
+('/minigames blackjack', 'Juega Blackjack clásico ♠️.', '/minigames blackjack', 2, 4),
+
+-- Comandos de Música
+('/music premium', 'Sube y reproduce un archivo de audio premium 🎵.', '/music premium [archivo]', 2, 5),
+('/music play', 'Reproduce un archivo de audio 🎵.', '/music play [archivo]', 2, 5),
+('/music queue', 'Consulta la cola de música actual 🎶.', '/music queue', 2, 5),
+('/music skip', 'Salta la pista actual ⏩.', '/music skip', 2, 5),
+('/music status', 'Consulta el estado actual de la música 📊.', '/music status', 2, 5),
+
+-- Comandos Útiles
+('/ping', 'Prueba la latencia del bot 🏓.', '/ping', 2, 6),
+('/help', 'Obtén ayuda sobre los comandos de AbbyBot 🤖.', '/help [categoría]', 2, 6),
+('/server info', 'Consulta información del servidor 📊.', '/server info', 2, 6),
+
+-- Comandos de Lore de AbbyBot
+('/tell story', 'Deja que AbbyBot te cuente una historia 📖.', '/tell story', 2, 7);

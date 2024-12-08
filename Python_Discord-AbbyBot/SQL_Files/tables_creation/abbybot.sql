@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS `help` (
     `command_description` VARCHAR(255) NOT NULL,
     `usage` VARCHAR(255) NOT NULL,
     `language_id` INT NOT NULL,
-    `category_id` INT NOT NULL, -- Nueva columna para enlazar con help_categories
+    `category_id` INT NOT NULL,
     PRIMARY KEY (`id`),
     INDEX `fk_language_id_idx` (`language_id` ASC) VISIBLE,
     INDEX `fk_category_id_idx` (`category_id` ASC) VISIBLE,
