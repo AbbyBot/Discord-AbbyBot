@@ -37,7 +37,7 @@ class TellHistory(commands.Cog):
         # Query to get a random dialogue from the selected category and the server's language
         cursor.execute("""
             SELECT d.message FROM dialogues d
-            JOIN categories c ON d.category_id = c.id
+            JOIN story_categories c ON d.category_id = c.id
             WHERE c.category = %s AND d.language_id = %s
             ORDER BY RAND() LIMIT 1;
         """, (category.value, language_id))
@@ -67,4 +67,4 @@ class TellHistory(commands.Cog):
         # Send message
         await interaction.response.send_message(embed=embed)
 
-      
+

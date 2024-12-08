@@ -54,15 +54,17 @@ CREATE TABLE IF NOT EXISTS `server_settings` (
 ) ENGINE = InnoDB COMMENT = 'Stores server-specific settings for AbbyBot, including server icons.';
 
 -- -----------------------------------------------------
--- Table `categories`
+-- Table `story_categories`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `categories`;
+DROP TABLE IF EXISTS `story_categories`;
 
-CREATE TABLE IF NOT EXISTS `categories` (
+CREATE TABLE IF NOT EXISTS `story_categories` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `category` VARCHAR(45) NOT NULL,
+    `description` VARCHAR(255) NULL COMMENT 'Description of the category',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB COMMENT = 'Stores categories for dialogues, like About Her, Lore, Advice.';
+
 
 -- -----------------------------------------------------
 -- Table `dialogues`
@@ -78,7 +80,7 @@ CREATE TABLE IF NOT EXISTS `dialogues` (
     INDEX `fk_dialogues_1_idx` (`language_id` ASC) VISIBLE,
     INDEX `fk_categories_idx` (`category_id` ASC) VISIBLE,
     CONSTRAINT `fk_languages` FOREIGN KEY (`language_id`) REFERENCES `languages` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    CONSTRAINT `fk_categories` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+    CONSTRAINT `fk_categories` FOREIGN KEY (`category_id`) REFERENCES `story_categories` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE = InnoDB COMMENT = 'Stores dialogue messages that AbbyBot says in different languages.';
 
 -- -----------------------------------------------------
@@ -316,14 +318,16 @@ VALUES (1, 'en', 'English'),
     (2, 'es', 'Español');
 
 INSERT INTO
-    categories (id, category)
-VALUES (1, 'About Her'),
-    (2, 'Lore'),
-    (3, 'Advice');
+    story_categories (id, category, description)
+VALUES
+    (1, 'About Her', 'AbbyBot will tell you information about her, what she is like, what she likes, what she dislikes, some other information that may interest you.'),
+    (2, 'Lore', 'AbbyBot will tell you her story (Combining it with that of her counterpart "Abby Monroe").'),
+    (3, 'Advice', 'AbbyBot will give you advice based on the personality of "Abby Monroe", the girl who survives a post-apocalyptic world dominated by machines.');
 
 INSERT INTO
     type_event_message (id, type_message)
-VALUES (1, 'normal'),
+VALUES 
+    (1, 'normal'),
     (2, 'angry'),
     (3, 'forgive'),
     (4, 'delete');
