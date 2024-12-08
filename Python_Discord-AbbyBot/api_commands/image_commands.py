@@ -105,187 +105,149 @@ class ImageCommands(commands.GroupCog, name="image"):
             db.close()
 
 
-    @app_commands.command(name="dog", description="Show images of random dogs")
+    @app_commands.command(name="dog", description="Show images of random dogs 🐶")
     async def dogimg(self, interaction: discord.Interaction):
+        await interaction.response.defer()  # Always defer
 
-        # Connect to database with dotenv variables
         db, cursor = get_db_connection()
 
-        # Get guild_id and user_id from the interaction
-        guild_id = interaction.guild_id
-        user_id = interaction.user.id
+        try:
+            # Get the server's language setting
+            guild_id = interaction.guild_id
+            cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
+            result = cursor.fetchone()
 
-        # Check if the user is active (is_active = 1) or inactive (is_active = 0)
-        cursor.execute("SELECT is_active FROM user_profile WHERE user_id = %s;", (user_id,))
-        result = cursor.fetchone()
+            if result is None:
+                await interaction.followup.send("This server is not registered. Please contact the admin.", ephemeral=True)
+                return
 
-        if result is None:
-            await interaction.response.send_message("User not found in the database.", ephemeral=True)
-            cursor.close()
-            db.close()
-            return
+            language_id = result[0]
 
-        # If the user is inactive (is_active = 0), send an embed in DM and exit
-        is_active = result[0]
-        if is_active == 0:
-            try:
-                # Get the embed and file
-                embed, file = account_inactive_embed()
+            # Fetch a random dog image from the API
+            url = "https://random.dog/woof.json"  # Random Dog API URL
+            response = requests.get(url)
 
-                # Send the embed and the file as DM
-                await interaction.user.send(embed=embed, file=file)
-                
-                print(f"User {interaction.user} is inactive and notified.")
-            except discord.Forbidden:
-                print(f"Could not send DM to {interaction.user}. They may have DMs disabled.")
+            if response.status_code != 200:
+                await interaction.followup.send("Failed to retrieve dog image. Please try again later.", ephemeral=True)
+                return
 
-            await interaction.response.send_message("Request Rejected: Your account has been listed as **inactive** in the AbbyBot system, please check your DM.", ephemeral=True)
-
-            cursor.close()
-            db.close()
-            return
-        else: # user are not "banned"
-            await interaction.response.defer()
-        
-        # Check if server is registered
-        guild_id = interaction.guild_id
-        cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
-        result = cursor.fetchone()
-
-        if result is None:
-            # if server is not registered, send error message
-            await interaction.followup.send("This server is not registered. Please contact the admin.", ephemeral=True)
-            cursor.close()
-            db.close()
-            return
-
-        # Get the language_id of the server
-        language_id = result[0]
-
-        url = f"https://random.dog/woof.json" # API url
-
-        response = requests.get(url)  # GET request
-
-        if response.status_code == 200:
             data = response.json()
-            img_dog = data['url']
+            img_dog = data["url"]
 
-        embed = discord.Embed(
-            title=f"Here's your dog!" if language_id == 1 else f"Aquí tiene su perro!",
-            description="Enjoy your image!" if language_id == 1 else "Disfrute su imagen!",
-            color=discord.Color.random()
-        )
-        embed.set_image(url=img_dog)
+            # Create embed
+            embed = discord.Embed(
+                title="Here's your dog image!" if language_id == 1 else "Aquí tiene su imagen de perro!",
+                color=discord.Color.random()
+            )
+            embed.add_field(
+                name="🔗 Image Credit",
+                value="Powered by [random.dog](https://random.dog)" if language_id == 1 else "Proporcionada por [random.dog](https://random.dog)",
+                inline=False
+            )
+            embed.set_image(url=img_dog)
 
-        bot_id = 1028065784016142398  # AbbyBot ID
-        bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
+            # Add thumbnail and footer
+            thumbnail_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "images", "profile_emotes", "abbybot_heart.png")
+            thumbnail_file = discord.File(thumbnail_path, filename="abbybot_thumbnail.png")
+            embed.set_thumbnail(url="attachment://abbybot_thumbnail.png")
 
-        embed.set_footer(text="Powered by RandomDog API" if language_id == 1 else "Imagen por RandomDog API", icon_url=bot_avatar_url)
+            footer_image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "images", "abbybot.png")
+            footer_file = discord.File(footer_image_path, filename="abbybot.png")
+            embed.set_footer(text="AbbyBot • Your Discord Ally", icon_url="attachment://abbybot.png")
 
-        await interaction.followup.send(embed=embed)
+            # Add button
+            view = discord.ui.View()
+            button = discord.ui.Button(label="Visit AbbyBot Website", url="https://abbybotproject.com")
+            view.add_item(button)
 
-        cursor.close()
-        db.close()
+            # Send response to the user
+            await interaction.followup.send(embed=embed, files=[thumbnail_file, footer_file], view=view)
+
+        except Exception as e:
+            print(f"Error in 'dogimg' command: {e}")
+            await interaction.followup.send("An unexpected error occurred. Please try again later.", ephemeral=True)
+
+        finally:
+            cursor.close()
+            db.close()
+
 
     @app_commands.command(name="neko", description="Show image of a random nekomimi.")
     async def nekoimg(self, interaction: discord.Interaction):
-
-
-        # Connect to database with dotenv variables
+        await interaction.response.defer()  # Always defer
         db, cursor = get_db_connection()
 
+        try:
+            # Get the server's language setting
+            guild_id = interaction.guild_id
+            cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
+            result = cursor.fetchone()
 
-        # Get guild_id and user_id from the interaction
-        guild_id = interaction.guild_id
-        user_id = interaction.user.id
+            if result is None:
+                await interaction.followup.send("This server is not registered. Please contact the admin.", ephemeral=True)
+                return
 
-        # Check if the user is active (is_active = 1) or inactive (is_active = 0)
-        cursor.execute("SELECT is_active FROM user_profile WHERE user_id = %s;", (user_id,))
-        result = cursor.fetchone()
+            language_id = result[0]
 
-        if result is None:
-            await interaction.response.send_message("User not found in the database.", ephemeral=True)
-            cursor.close()
-            db.close()
-            return
+            # Fetch random neko image from the API
+            url = "https://nekos.best/api/v2/neko"  # Nekos.best API URL
+            response = requests.get(url)
 
-        # If the user is inactive (is_active = 0), send an embed in DM and exit
-        is_active = result[0]
-        if is_active == 0:
-            try:
-                # Get the embed and file
-                embed, file = account_inactive_embed()
+            if response.status_code != 200:
+                await interaction.followup.send("Failed to retrieve nekomimi image. Please try again later.", ephemeral=True)
+                return
 
-                # Send the embed and the file as DM
-                await interaction.user.send(embed=embed, file=file)
-                
-                print(f"User {interaction.user} is inactive and notified.")
-            except discord.Forbidden:
-                print(f"Could not send DM to {interaction.user}. They may have DMs disabled.")
-
-            await interaction.response.send_message("Request Rejected: Your account has been listed as **inactive** in the AbbyBot system, please check your DM.", ephemeral=True)
-
-            cursor.close()
-            db.close()
-            return
-        else: # user are not "banned"
-            await interaction.response.defer()
-
-        # Check if server is registered
-        guild_id = interaction.guild_id
-        cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
-        result = cursor.fetchone()
-
-        if result is None:
-            # if server is not registered, send error message
-            await interaction.response.send_message("This server is not registered. Please contact the admin.", ephemeral=True)
-            cursor.close()
-            db.close()
-            return
-
-        # Get the language_id of the server
-        language_id = result[0]
-
-        url = "https://nekos.best/api/v2/neko"  # API url
-
-        response = requests.get(url)  # GET request
-
-        if response.status_code == 200:
             data = response.json()
-
-            # Get 'results' data
             result = data['results'][0]
-            
+
+            # Extract information from the API response
             artist_href = result.get('artist_href', 'No artist link available')
             artist_name = result.get('artist_name', 'Unknown artist')
             source_url = result.get('source_url', 'No source available')
             img_neko = result.get('url', '')
 
-
+            # Create embed
             embed = discord.Embed(
-                title=f"Here's your image!" if language_id == 1 else f"Aquí tiene su imagen!",
-                description="Enjoy your image!" if language_id == 1 else "Disfrute su imagen!",
+                title="Here's your nekomimi image!" if language_id == 1 else "Aquí tiene su imagen de nekomimi!",
                 color=discord.Color.random()
             )
-
-            embed.add_field(name="Artist" if language_id == 1 else "Artista", value=f"[{artist_name}]({artist_href})", inline=False)
-            embed.add_field(name="Source" if language_id == 1 else "Recurso", value=f"[{'Go URL' if language_id == 1 else 'Ir a la URL'}]({source_url})", inline=False)
-            
+            embed.add_field(
+                name="🎨 Artist" if language_id == 1 else "🎨 Artista",
+                value=f"[{artist_name}]({artist_href})",
+                inline=False
+            )
+            embed.add_field(
+                name="🔗 Source" if language_id == 1 else "🔗 Recurso",
+                value=f"[{'Go URL' if language_id == 1 else 'Ir a la URL'}]({source_url})",
+                inline=False
+            )
             embed.set_image(url=img_neko)
 
-            bot_id = 1028065784016142398  # AbbyBot ID
-            bot_avatar_url = await get_bot_avatar(self.bot, bot_id)
+            # Add thumbnail and footer
+            thumbnail_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "images", "profile_emotes", "abbybot_heart.png")
+            thumbnail_file = discord.File(thumbnail_path, filename="abbybot_thumbnail.png")
+            embed.set_thumbnail(url="attachment://abbybot_thumbnail.png")
 
-            embed.set_footer(text="Powered by nekos.best API" if language_id == 1 else "Imagen por nekos.best API", icon_url=bot_avatar_url)
+            footer_image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "images", "abbybot.png")
+            footer_file = discord.File(footer_image_path, filename="abbybot.png")
+            embed.set_footer(text="AbbyBot • Your Discord Ally", icon_url="attachment://abbybot.png")
 
-            await interaction.followup.send(embed=embed)
-        else:
-           # Error handling when the request is not successful
-            await interaction.followup.send("Error fetching image.", ephemeral=True)
+            # Add button
+            view = discord.ui.View()
+            button = discord.ui.Button(label="Visit AbbyBot Website", url="https://abbybotproject.com")
+            view.add_item(button)
 
+            # Send response to the user
+            await interaction.followup.send(embed=embed, files=[thumbnail_file, footer_file], view=view)
 
-        cursor.close()
-        db.close()
+        except Exception as e:
+            print(f"Error in 'nekoimg' command: {e}")
+            await interaction.followup.send("An unexpected error occurred. Please try again later.", ephemeral=True)
+
+        finally:
+            cursor.close()
+            db.close()
+
 
     @app_commands.command(name="waifu", description="Show image of a random waifu, 30 different categories available.")
     @app_commands.choices(categories=[
