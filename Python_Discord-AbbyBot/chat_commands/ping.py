@@ -3,23 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 import asyncio
 import random
-import os
-import random
-from embeds.embeds import account_inactive_embed
 from utils.db_utils import get_db_connection
-
-
-# load all .env Emojis
-emojis_str = os.getenv("EMOJIS", "")  # Get the string, default will be an empty string if not defined
-
-# Check if global variable have content
-if not emojis_str:
-    emojis = [" "]  # Use blank space if variable doesn't have content
-else:
-    emojis = emojis_str.split(',')  # Separate string in a list of emojis
-
-# Choose a random emoji (or space if there are no emojis)
-random_emoji = random.choice(emojis)
 
 
 class Ping(commands.Cog):
@@ -31,40 +15,10 @@ class Ping(commands.Cog):
 
         db, cursor = get_db_connection()
 
-         # Get guild_id and user_id from the interaction
+        # Get guild_id and user_id from the interaction
         guild_id = interaction.guild_id
         user_id = interaction.user.id
 
-        # Check if the user is active (is_active = 1) or inactive (is_active = 0)
-        cursor.execute("SELECT is_active FROM user_profile WHERE user_id = %s;", (user_id,))
-        result = cursor.fetchone()
-
-        if result is None:
-            await interaction.response.send_message("User not found in the database.", ephemeral=True)
-            cursor.close()
-            db.close()
-            return
-
-        # If the user is inactive (is_active = 0), send an embed in DM and exit
-        is_active = result[0]
-        if is_active == 0:
-            try:
-                # Get the embed and file
-                embed, file = account_inactive_embed()
-
-                # Send the embed and the file as DM
-                await interaction.user.send(embed=embed, file=file)
-                
-                print(f"User {interaction.user} is inactive and notified.")
-            except discord.Forbidden:
-                print(f"Could not send DM to {interaction.user}. They may have DMs disabled.")
-
-            await interaction.response.send_message("Request Rejected: Your account has been listed as **inactive** in the AbbyBot system, please check your DM.", ephemeral=True)
-
-            cursor.close()
-            db.close()
-            return
-        
         # Query to check the server's language setting (obligatory field)
         cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
         result = cursor.fetchone()
@@ -76,14 +30,11 @@ class Ping(commands.Cog):
             return
         
         # Get server language
-        
         language_id = result[0]  # Get language ID
 
         # Validate the language
-
         if language_id == 1:
-
-            await interaction.response.send_message(f"Pinging... {random_emoji} ") 
+            await interaction.response.send_message("Pinging...") 
 
             # Calculate bot latency
             bot_latency = round(self.bot.latency * 1000)
@@ -103,11 +54,10 @@ class Ping(commands.Cog):
 
             await asyncio.sleep(2) 
 
-            await interaction.channel.send(content=f'Pong! 🏓\nBot latency: {bot_latency} ms\nYour estimated ping: {final_ping} ms\n{criticism}')
+            await interaction.channel.send(content=f'🏓 Pong!\n**Bot latency:** {bot_latency} ms\n**Your estimated ping:** {final_ping} ms\n{criticism}')
        
         elif language_id == 2:
-
-            await interaction.response.send_message(f"Haciendo ping... {random_emoji}") 
+            await interaction.response.send_message("Haciendo ping...") 
 
             # Calculate bot latency
             bot_latency = round(self.bot.latency * 1000)
@@ -127,7 +77,7 @@ class Ping(commands.Cog):
 
             await asyncio.sleep(2) 
 
-            await interaction.channel.send(content=f'Pong! 🏓\nLatencia del bot: {bot_latency} ms\nTu ping estimado: {final_ping} ms\n{criticism}')
+            await interaction.channel.send(content=f'🏓 ¡Pong!\n**Latencia del bot:** {bot_latency} ms\n**Tu ping estimado:** {final_ping} ms\n{criticism}')
         
         # Close db connection
         cursor.close()
