@@ -28,7 +28,7 @@ token = os.getenv("BOT_TOKEN")
 # Chat commands import
 from chat_commands.ping import Ping
 from chat_commands.help import Help
-from chat_commands.tell_history import TellHistory
+from chat_commands.tell_history import TellGroup
 from chat_commands.server_commands import ServerCommands
 from chat_commands.user_commands import UserCommands
 
@@ -144,7 +144,7 @@ async def on_ready():
     await bot.add_cog(abbybot_mentions(bot))
     await bot.add_cog(Help(bot))
 
-    await bot.add_cog(TellHistory(bot))
+    await bot.add_cog(TellGroup(bot))
 
     await bot.add_cog(SetCommands(bot))
     await bot.add_cog(ControlGroup(bot))

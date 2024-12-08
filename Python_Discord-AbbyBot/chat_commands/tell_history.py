@@ -3,19 +3,19 @@ from discord.ext import commands
 from discord import app_commands
 from utils.db_utils import get_db_connection
 
-class TellHistory(commands.Cog):
+class TellGroup(commands.GroupCog, name="tell"):
     def __init__(self, bot):
+        super().__init__()
         self.bot = bot
 
-    @app_commands.command(name="tell_history", description="Let AbbyBot tell you something!")
+    @app_commands.command(name="story", description="Let AbbyBot tell you a story!")
     @app_commands.choices(
         category=[
-            app_commands.Choice(name="About Her", value="About Her"),
-            app_commands.Choice(name="Lore", value="Lore"),
-            app_commands.Choice(name="Advice", value="Advice"),
+            app_commands.Choice(name="About AbbyBot", value="About Her"),
+            app_commands.Choice(name="Her Lore", value="Lore"),
         ]
     )
-    async def tell_history(self, interaction: discord.Interaction, category: app_commands.Choice[str]):
+    async def stories(self, interaction: discord.Interaction, category: app_commands.Choice[str]):
 
         db, cursor = get_db_connection()
 
@@ -25,7 +25,7 @@ class TellHistory(commands.Cog):
         result = cursor.fetchone()
 
         if result is None:
-            # if server is not registered, send error message
+            # If server is not registered, send error message
             await interaction.response.send_message("This server is not registered. Please contact the admin.", ephemeral=True)
             cursor.close()
             db.close()
@@ -61,10 +61,9 @@ class TellHistory(commands.Cog):
         embed = discord.Embed(
             title=category.value,
             description=dialogue[0],  # Fetch the first column, which is the message
-            color=discord.Color.from_rgb(145, 61, 33)  # Abbybot's color
+            color=discord.Color.random()
         )
 
         # Send message
         await interaction.response.send_message(embed=embed)
-
 
