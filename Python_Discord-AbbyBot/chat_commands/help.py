@@ -24,36 +24,6 @@ class Help(commands.Cog):
         cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
         result = cursor.fetchone()
 
-        # Check if the user is active (is_active = 1) or inactive (is_active = 0)
-        cursor.execute("SELECT is_active FROM user_profile WHERE user_id = %s;", (user_id,))
-        result = cursor.fetchone()
-
-        if result is None:
-            await interaction.response.send_message("User not found in the database.", ephemeral=True)
-            cursor.close()
-            db.close()
-            return
-
-        # If the user is inactive (is_active = 0), send an embed in DM and exit
-        is_active = result[0]
-        if is_active == 0:
-            try:
-                # Get the embed and file
-                embed, file = account_inactive_embed()
-
-                # Send the embed and the file as DM
-                await interaction.user.send(embed=embed, file=file)
-                
-                print(f"User {interaction.user} is inactive and notified.")
-            except discord.Forbidden:
-                print(f"Could not send DM to {interaction.user}. They may have DMs disabled.")
-
-            await interaction.response.send_message("Request Rejected: Your account has been listed as **inactive** in the AbbyBot system, please check your DM.", ephemeral=True)
-
-            cursor.close()
-            db.close()
-            return
-
         # Query to check the server's language setting (obligatory field)
         cursor.execute("SELECT guild_language FROM server_settings WHERE guild_id = %s", (guild_id,))
         result = cursor.fetchone()
