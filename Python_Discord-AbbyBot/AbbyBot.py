@@ -65,6 +65,7 @@ from event_commands.members.on_member_update import MemberUpdateEvent
 
 # APIs commands import
 from api_commands.image_commands import ImageCommands
+from api_commands.fortnite_commands import FortniteCommands
 
 
 # Premium commands
@@ -152,6 +153,7 @@ async def on_ready():
     
     await bot.add_cog(Minigames_commands(bot))
     await bot.add_cog(ImageCommands(bot))
+    await bot.add_cog(FortniteCommands(bot))
     await bot.add_cog(ServerCommands(bot))
     await bot.add_cog(UserCommands(bot))
 
