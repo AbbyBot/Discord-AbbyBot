@@ -74,6 +74,16 @@ from api_commands.fortnite_commands import FortniteCommands
 
 from premium_commands.music_player import MusicPlayer
 
+print(r'''
+    ___    __    __          ____        __     ____               _           __ 
+   /   |  / /_  / /_  __  __/ __ )____  / /_   / __ \_________    (_)__  _____/ /_
+  / /| | / __ \/ __ \/ / / / __  / __ \/ __/  / /_/ / ___/ __ \  / / _ \/ ___/ __/
+ / ___ |/ /_/ / /_/ / /_/ / /_/ / /_/ / /_   / ____/ /  / /_/ / / /  __/ /__/ /_  
+/_/  |_/_.___/_.___/\__, /_____/\____/\__/  /_/   /_/   \____/_/ /\___/\___/\__/  
+                   /____/                                   /___/                   
+                             your best ally and friend on your discord server    
+      ''')
+
 
 # Discord bot setup
 bot = commands.Bot(command_prefix='abbybot_', intents=discord.Intents.all())
