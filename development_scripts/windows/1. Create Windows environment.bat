@@ -11,7 +11,7 @@ REM Activate virual environment
 call "%script_path%venv\Scripts\activate"
 
 REM install requirements.txt
-pip install -r "%script_path%requirements.txt"
+pip install -r "%script_path%\discord_abbybot\requirements.txt"
 
 REM Disable environment
 deactivate
