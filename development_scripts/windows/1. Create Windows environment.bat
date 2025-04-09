@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 REM Set script path
-set "script_path=%~dp0"
+set "script_path=%~dp0..\.."
 
 REM Create new enviroment called "venv"
 python -m venv "%script_path%venv"

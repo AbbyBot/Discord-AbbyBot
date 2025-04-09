@@ -1,7 +1,7 @@
 @echo off
 
 REM Set script path
-set "script_path=%~dp0"
+set "script_path=%~dp0..\.."
 
 REM Activate virual environment
 call "%script_path%venv\Scripts\activate"
