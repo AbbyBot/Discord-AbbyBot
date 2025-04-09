@@ -7,6 +7,8 @@ import random
 import signal
 from xp_system.xp_events import add_xp
 
+
+
 # utils/AbbyBot-Main functions
 from utils.AbbyBot_Main.get_db_connection import get_db_connection
 from utils.AbbyBot_Main.server_data.ensure_tables_exists import ensure_tables_exist
@@ -17,7 +19,7 @@ from utils.AbbyBot_Main.server_data.register_channels import register_channels
 from utils.AbbyBot_Main.API.notify_api_status import notify_api_status
 from utils.AbbyBot_Main.server_data.update_server_icon import update_server_icon
 from utils.AbbyBot_Main.API.handle_shutdown import handle_shutdown
-
+from utils.AbbyBot_Main.API.notify_api_status import  update_bot_info
 
 # Load dotenv variables
 load_dotenv()
@@ -76,12 +78,16 @@ from premium_commands.music_player import MusicPlayer
 # Discord bot setup
 bot = commands.Bot(command_prefix='abbybot_', intents=discord.Intents.all())
 
+
 @bot.event
 async def on_ready():
     print("\033[34m" + 'Bot started as ' + bot.user.name + "\033[0m")
 
     # Notify the API that AbbyBot is online
     notify_api_status("online")
+
+    # Update bot info to AbbyBot API
+    update_bot_info(bot)
     
     with get_db_connection() as db:
         cursor = db.cursor()

@@ -25,3 +25,26 @@ def notify_api_status(status):
     except requests.exceptions.RequestException as e:
 
         print("\033[31m" + f"Error notifying API: {e}" + "\033[0m")
+
+def update_bot_info(bot):
+    try:
+        api_url = os.getenv("API_URL")
+
+        if not api_url:
+            print("\033[31mAPI URL not found. Check your environment variables.\033[0m")
+            return
+        
+        bot_id = bot.user.id
+
+        bot_avatar = bot.user.avatar
+
+        bot_name = bot.user.name
+
+        # Work in progress
+
+        print(f"bot: info {bot_id} {bot_name} {bot_avatar}")
+
+        
+    except requests.exceptions.RequestException as e:
+
+        print("\033[31m" + f"Error updating bot info: {e}" + "\033[0m")
