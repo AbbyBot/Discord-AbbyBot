@@ -1,0 +1,6 @@
+services:
+  abbybot:
+    build: ./
+    tty: true
+    stdin_open: true
+    # restart: always
