@@ -6,7 +6,7 @@ from datetime import datetime
 import random
 import signal
 from xp_system.xp_events import add_xp
-
+import asyncio
 
 
 # utils/AbbyBot-Main functions
@@ -81,7 +81,7 @@ print(r'''
  / ___ |/ /_/ / /_/ / /_/ / /_/ / /_/ / /_   / ____/ /  / /_/ / / /  __/ /__/ /_  
 /_/  |_/_.___/_.___/\__, /_____/\____/\__/  /_/   /_/   \____/_/ /\___/\___/\__/  
                    /____/                                   /___/                   
-                             your best ally and friend on your discord server    
+                             "Your best friend on your Discord server"    
       ''')
 
 
@@ -348,10 +348,15 @@ async def on_member_update(before, after):
     if removed_roles:
         print("\033[34m" + "Roles removed from " + "\033[32m" + after.name + "\033[34m" + ": " + "\033[31m" + str([role.name for role in removed_roles]) + "\033[0m")
 
-# Capture the Ctrl+C (SIGINT) signal to execute handle_shutdown
-signal.signal(signal.SIGINT, handle_shutdown)
 
-try:
-    bot.run(token)
-except Exception as e:
-    print(f"An error occurred: {e}")
+def shutdown_handler(sig, frame): # This function is called when the bot is shutting down, Python and Docker
+    handle_shutdown(sig, frame)
+
+signal.signal(signal.SIGINT, shutdown_handler)
+signal.signal(signal.SIGTERM, shutdown_handler)
+
+async def main():
+    async with bot:
+        await bot.start(token)
+
+asyncio.run(main())
